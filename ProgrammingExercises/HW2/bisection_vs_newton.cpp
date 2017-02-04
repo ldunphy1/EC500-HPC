@@ -102,16 +102,14 @@ int main()
   return  0;
 }
 
-// This routine is currently hard coded for the function
-// f(x) = x^2-A.
-long double newton(long double x, long double A)
+long double newton(long double x, long double A, int n)
 {
-  return x*(1 - 1.0/2.0) + A/(2.0*pow(x,1.0));
+  return x*(1 - 1.0/n) + A/(n*pow(x,n-1));
 }
 
 // This routine is currently hard coded for the function
 // f(x) - x^2 - A
-long double bisection(long double A, long double & min, long double & max)
+long double bisection(long double A, long double & min, long double & max, int n)
 {
   long double x  = (min + max)/2.0;
   if(x*x-A < 0.0)
