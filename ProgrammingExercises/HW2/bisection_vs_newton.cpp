@@ -110,11 +110,12 @@ long double newton(long double x, long double A, int n)
 long double bisection(long double A, long double & min, long double & max, int n)
 {
   long double x  = (min + max)/2.0;
-  long double ym = x*x - A;
-  long double ya = min*min - A;
-  if((ym > 0.0 && ya < 0) || (ym < 0 && ya > 0))
+  long double fmin = pow(min,n) - A;
+  long double fx = pow(x,n) - A;
+  if((fmin*fx) < 0.0)
     max = x;
   else
     min = x;
+
   return x;
 }
