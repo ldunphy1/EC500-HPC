@@ -20,14 +20,14 @@ using std::abs;
 // and returns a new guess (x - f(x)/f'(x) -> x_new).
 // For now, you need to hard-code the numerical function and
 // its derivative. 
-long double newton(long double x, long double A);
+long double newton(long double x, long double A, int n);
 
 // This function performs one iteration of bisection
 // and updates either "min" or "max" (note how they are both
 // passed by reference), and returns the current "midpoint".
 // Again, you need to hard-code the numerical function. Bisection
 // does not require a derivative. 
-long double bisection(long double A, long double & min, long double & max);
+long double bisection(long double A, long double & min, long double & max, int n);
 
 int main()
 {
@@ -39,7 +39,7 @@ int main()
   long double A;
   
   // Declare a counter.
-  int count; 
+  int count, n; 
   
   // Print the number of digits a long double can hold.
   cout << "Number of digits accuracy in long double " << LDBL_MANT_DIG << endl;
@@ -49,9 +49,11 @@ int main()
   cout.precision(20);
   
   // Describe the problem and prompt the user:
-  cout << " Compute the square root by Newton's Method and the bisection method to a tolerance " << TOL << "." << endl;
+  cout << " Compute the nth root by Newton's Method and the bisection method to a tolerance " << TOL << "." << endl;
   cout <<"Give a number A: ";
   cin >> A;
+  cout <<"Give a root n: ";
+  cin >> n;
 
   // Choose an initial guess for Newton's method: in this case,
   // A/2. Set the output precision as well.
@@ -61,17 +63,17 @@ int main()
   do 
   {
     count++;
-    x = newton(x, A);
+    x = newton(x, A, n);
     fractional_error = 0.5*abs(x*x/A-1);
-    cout << x << "\t" << fractional_error << endl;
+    //cout << x << "\t" << fractional_error << endl;
   }
   while(fractional_error > TOL && count < 100000);
 
   cout.precision(40);
   cout << "After " << count << " iterations, Newton's method " << endl;
-  cout << "gave = "  << x  <<  " vs cmath = "  << sqrt(A) << endl; 
-  cout.precision(20);
-  cout << " relative error   = " << (x - sqrt(A))/(sqrt(A)) << endl;
+  cout << "gave = "  << x  <<  " vs cmath = "  << pow(A,(1.0/n)) << endl; 
+  //cout.precision(20);
+  //cout << " relative error   = " << (x - sqrt(A))/(sqrt(A)) << endl;
 
   /*   Compare with bisection */
   cout<< " Bisection Method starting with min = 0 and max = A\n";
@@ -84,38 +86,35 @@ int main()
   do 
   {
     count++;
-    x =  bisection( A,  min, max);
+    x =  bisection( A,  min, max, n);
     fractional_error = 0.5*abs(x*x/A-1);
-    cout.precision(20);
-    cout << x   << "\t" <<  fractional_error << endl;
+    //cout.precision(20);
+    //cout << x   << "\t" <<  fractional_error << endl;
   }
   while(fractional_error > TOL);
-
-
+  
   cout.precision(40);
   cout << "Bisection's value  in " << count << " iterations " << endl;
-  cout << "gave = "  << x  <<  " vs cmath = "  << sqrt(A) << endl;
-  cout.precision(20);
-  cout << " error   = " << x - sqrt(A) << endl;
-
-
+  cout << "gave = "  << x  <<  " vs cmath = "  << pow(A,(1.0/n)) << endl;
+  //cout.precision(20);
+  //cout << " error   = " << x - sqrt(A) << endl;
   return  0;
 }
+
 
 long double newton(long double x, long double A, int n)
 {
   return x*(1 - 1.0/n) + A/(n*pow(x,n-1));
 }
 
-// This routine is currently hard coded for the function
-// f(x) - x^2 - A
 long double bisection(long double A, long double & min, long double & max, int n)
 {
   long double x  = (min + max)/2.0;
-  if(x*x-A < 0.0)
-    min = x;
-  else
+  long double ym = x*x - A;
+  long double ya = min*min - A;
+  if((ym > 0.0 && ya < 0) || (ym < 0 && ya > 0))
     max = x;
-
+  else
+    min = x;
   return x;
 }
