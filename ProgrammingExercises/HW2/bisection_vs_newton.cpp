@@ -42,19 +42,24 @@ int main()
   int count, n; 
   
   // Print the number of digits a long double can hold.
-  cout << "Number of digits accuracy in long double " << LDBL_MANT_DIG << endl;
+  //cout << "Number of digits accuracy in long double " << LDBL_MANT_DIG << endl;
   
   // Fix the output format.
   cout.setf(ios::fixed,ios::floatfield); 
   cout.precision(20);
   
   // Describe the problem and prompt the user:
-  cout << " Compute the nth root by Newton's Method and the bisection method to a tolerance " << TOL << "." << endl;
+  //cout << " Compute the nth root by Newton's Method and the bisection method to a tolerance " << TOL << "." << endl;
   cout <<"Give a number A: ";
-  cin >> A;
-  cout <<"Give a root n: ";
-  cin >> n;
-
+  //cin >> A;
+  //cout <<"Give a root n: ";
+  //cin >> n;
+  n = 2;
+for (int i=0; i< 10000000; i++)
+{
+	int time_seconds = time(0);
+	srand(time_seconds%100);
+	A = rand()%10000000
   // Choose an initial guess for Newton's method: in this case,
   // A/2. Set the output precision as well.
   x = A/2;
@@ -64,7 +69,7 @@ int main()
   {
     count++;
     x = newton(x, A, n);
-    fractional_error = 0.5*abs(x*x/A-1);
+    fractional_error = 0.5*abs((pow(x,n))/A-1);
     //cout << x << "\t" << fractional_error << endl;
   }
   while(fractional_error > TOL && count < 100000);
@@ -87,15 +92,16 @@ int main()
   {
     count++;
     x =  bisection( A,  min, max, n);
-    fractional_error = 0.5*abs(x*x/A-1);
+    fractional_error = 0.5*abs((pow(x,n))/A-1);
     //cout.precision(20);
     //cout << x   << "\t" <<  fractional_error << endl;
   }
   while(fractional_error > TOL);
   
   cout.precision(40);
-  cout << "Bisection's value  in " << count << " iterations " << endl;
-  cout << "gave = "  << x  <<  " vs cmath = "  << pow(A,(1.0/n)) << endl;
+}
+  //cout << "Bisection's value  in " << count << " iterations " << endl;
+  //cout << "gave = "  << x  <<  " vs cmath = "  << pow(A,(1.0/n)) << endl;
   //cout.precision(20);
   //cout << " error   = " << x - sqrt(A) << endl;
   return  0;
