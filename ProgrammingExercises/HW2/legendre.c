@@ -17,9 +17,9 @@ int getLegendreCoeff(double* A, int n)
 	}
 	for(int i=2;i<=n;i++)
 	{
-		for(int j=0;j<=n;j++)
+		for(int j=n;j>=0;j--)
 		{
-			(*a)[i][j] = (2*i-1)/i * j * (*a)[i-1][j] - (i-1)/i * (*a)[i-2][j];		
+			(*a)[i][j] = (2*i-1)/i * (*a)[i-1][j-1] - (i-1)/i * (*a)[i-2][j];		
 		}
 	}
 	return 1;		
