@@ -45,7 +45,7 @@ int getLegendreZero(double* zero, double* a, int n)
 	bool initial=true;
 	for (k=1;k<n;k++)
 	{
-		xprev = (1.0 - (1/(8.0 * pow(n,2.0))) + (1.0/(8.0 * pow(n,3)))) * cos(PI * (4.0*k - 1.0)/(4.0*n + 2.0));
+		xprev = (1.0 - (1.0/(8.0 * pow(n,2.0))) + (1.0/(8.0 * pow(n,3)))) * cos(PI * (4.0*k - 1.0)/(4.0*n + 2.0));
 		xnext = 2.0;
 		while ( (abs((xnext-xprev)/xprev) >= TOL) && (xprev!=0) )
 		{
@@ -74,7 +74,7 @@ int main()
 		cout<<"C'mon man, don't ask me for an order greater than 30.\n";
 		cin>>n;
 	}
-	double* zero = new double[n];
+	double* zero = new double[n+1];
 	double* a = new double[n+1];
 	for(int i=0; i<n+1;i++)
 	{
@@ -87,7 +87,7 @@ int main()
 		A[i] =0.0;
 	}
 	getLegendreCoeff(A, n);
-	for(int i=0;i<n+n*(n+1);i++)
+	for(int i=0;i<=n+n*(n+1);i++)
 	{
 		a[i] =A[i + n*(n+1)];
 	}
