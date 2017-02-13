@@ -45,7 +45,7 @@ int getLegendreZero(double* zero, double* a, int n)
 	bool initial=true;
 	for (k=1;k<n;k++)
 	{
-		xprev = (1.0 - (1/(8.0 * pow(n,2.0))) + (1/(8.0 * pow(n,3)))) * cos(PI * (4*k - 1.0)/(4*n + 2.0));
+		xprev = (1.0 - (1/(8.0 * pow(n,2.0))) + (1.0/(8.0 * pow(n,3)))) * cos(PI * (4.0*k - 1.0)/(4.0*n + 2.0));
 		xnext = 2.0;
 		while ( (abs((xnext-xprev)/xprev) >= TOL) && (xprev!=0) )
 		{
