@@ -76,7 +76,7 @@ int main()
 	}
 	double* zero = new double[n];
 	double* a = new double[n+1];
-	for(int i=0; i<=n+n*(n+1);i++)
+	for(int i=0; i<n+1;i++)
 	{
 		zero[i] = 0.0;
 		a[i] = 0.0;
@@ -87,7 +87,7 @@ int main()
 		A[i] =0.0;
 	}
 	getLegendreCoeff(A, n);
-	for(int i=0;i<n+1;i++)
+	for(int i=0;i<n+n*(n+1);i++)
 	{
 		a[i] =A[i + n*(n+1)];
 	}
