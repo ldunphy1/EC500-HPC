@@ -3,7 +3,7 @@
 #include <cmath>
 #include <float.h>
 #define PI 3.14159265358979323846
-#define TOL 1.0E-15
+#define TOL 1.0E-8
 
 using namespace std;
 
@@ -45,6 +45,7 @@ int getLegendreZero(double* zero, double* a, int n)
 	bool initial=true;
 	for (k=1;k<=n;k++)
 	{
+		initial = true;
 		xprev = (1.0 - (1.0/(8.0 * pow(n,2.0))) + (1.0/(8.0 * pow(n,3)))) * cos(PI * (4.0*k - 1.0)/(4.0*n + 2.0));
 		xnext = 2.0;
 		while ( (abs((xnext-xprev)/xprev) >= TOL) && (xprev!=0) )
@@ -87,11 +88,13 @@ int main()
 		A[i] =0.0;
 	}
 	getLegendreCoeff(A, n);
-	for(int i=0;i<=n+n*(n+1);i++)
+	for(int i=0;i<n+1;i++)
 	{
 		a[i] =A[i + n*(n+1)];
 	}
+	delete[] A;
 	getLegendreZero(zero, a, n);
+	delete[] a;
 	for(int i=0;i<n;i++)
 	{
 		cout<<zero[i]<<" ";
