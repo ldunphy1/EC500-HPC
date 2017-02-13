@@ -28,7 +28,7 @@ double func(double* a, double x, int n)
 	}
 	return sum;
 }
-double fp(double* a, double x, int n)
+double fprime(double* a, double x, int n)
 {
 	double sum = a[1];
 	for(int i=2;i<=n;i++)
@@ -41,7 +41,7 @@ double fp(double* a, double x, int n)
 int getLegendreZero(double* zero, double* a, int n)
 {
 	int k, count=0;
-	double xprev, xnext;
+	double xprev, xnext, f, fp;
 	bool initial=true;
 	for (k=1;k<n;k++)
 	{
@@ -53,12 +53,15 @@ int getLegendreZero(double* zero, double* a, int n)
 			{
 				xprev = xnext;
 			}
-			xnext = (xprev - (func(a, xprev, n)/fp(a, xprev, n)));
+			f = func(a, xprev, n);
+			fp = fprime(a, xprev, n);
+			xnext = xprev - f/fp;
 			initial=false;
 			count++;
 		}
 		zero[k-1] = xnext;
 	} 
+	return 0;
 }
 
 int main()
