@@ -22,7 +22,7 @@ int getLegendreCoeff(double* a, int n)
 double func(double* a, double x, int n)
 {
 	double sum = a[0];
-	for(int i=1;i<=n;i++)
+	for(int i=1;i<n;i++)
 	{
 		sum += a[i] * pow(x,i);
 	}
@@ -31,33 +31,25 @@ double func(double* a, double x, int n)
 double fp(double* a, double x, int n)
 {
 	double sum = a[1];
-	for(int i=2;i<=n;i++)
+	for(int i=2;i<n;i++)
 	{
 		sum += a[i] * i * pow(x,i-1);
 	}
-	return sum;
 }
 
 int getLegendreZero(double* zero, double* a, int n)
 {
-	int k, count=0;
+	int k, i;
 	double xprev, xnext;
-	bool initial=true;
 	for (k=1;k<n;k++)
 	{
 		xprev = (1.0 - (1/(8.0 * pow(n,2.0))) + (1/(8.0 * pow(n,3)))) * cos(PI * (4*k - 1.0)/(4*n + 2.0));
 		xnext = 2.0;
-		while ( (abs((xnext-xprev)/xprev) >= TOL) && (xprev!=0) )
+		do
 		{
-			if(initial==false)
-			{
-				xprev = xnext;
-			}
-			xnext = (xprev - (func(a, xprev, n)/fp(a, xprev, n)));
-			initial=false;
-			count++;
-		}
-		zero[k-1] = xnext;
+			xprev = xnext;
+			xnext = xprev - (func(xprev)/fp(xprev));
+		}while ( (abs((xnext-xprev)/xprev) >= TOL) || (xprev==0) )
 	} 
 }
 
@@ -89,11 +81,6 @@ int main()
 		a[i] =A[i + n*(n+1)];
 	}
 	getLegendreZero(zero, a, n);
-	for(int i=0;i<n;i++)
-	{
-		cout<<zero[i]<<" ";
-	}
-	cout<<endl;
 	
 	return 0;
 }
