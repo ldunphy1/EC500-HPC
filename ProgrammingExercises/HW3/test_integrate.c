@@ -132,6 +132,7 @@ double f3(double x)
 
 int main()
 {
+	cout.precision(15);
 	int n, i, k;
 	int count = 1;
 	double h;
