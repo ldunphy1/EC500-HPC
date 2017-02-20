@@ -115,65 +115,68 @@ int getLegendreZero(double* zero, double* a, int n)
 	return 0;
 }
 
+double f1(double x)
+{
+	return pow(x, 8.0);
+}
+
+double f2(double x)
+{
+	return cos(PI * x/2.0);
+}
+
+double f3(double x)
+{
+	return (1.0/(pow(x,2.0)+1.0));
+}
+
 int main()
 {
 	int n, i, k;
-	cout<<"What value of N? \n";
-	cin>>n;
-	double* x = new double[n];
-	double* w = new double[n];
-	double** system = new double*[n];
-	double* zero = new double[n+1];
-	double* a = new double[n+1];
-	double* A = new double[(n+1)*(n+1)];
-	for (i=0;i<n;i++) { system[i] = new double[n]; }
-	getLegendreCoeff(A, n);
-	for (i=0;i<n+1;i++) { a[i] =A[i + n*(n+1)]; }
-	delete[] A;
-	getLegendreZero(zero, a, n);
-	delete[] a;
-	for(k=0;k<n;k++)
+	int count = 1;
+	double h;
+	double int_f1 = 0.0;
+	double int_f2 = 0.0;
+	double int_f3 = 0.0;
+	while(count<4)
 	{
-		if(k%2)
+		for(n=2; n<=15; n++)
 		{
-			x[k] = 0.0;
-			w[k] = x[k];
-		}
-		else
-		{
-			x[k] = 2.0/(k+1.0);
-			w[k] = x[k];
-		}
-	}
-	for(i=0;i<n;i++)
-	{
-		for(k=0;k<n;k++)
-		{
-			if(i==0) { system[i][k] = 1.0; }
-			if(i==1){ system[i][k] = zero[k] ;}
-			else
+			h = 2.0/n;
+			double* x = new double[n+1];
+			x[0] = -1.0;
+			x[n] = 1.0; 
+			for(i=1;i<n;i++)
 			{
-				system[i][k] = pow(zero[k], i);
+				x[i] = -1.0 + (2.0*i/n);
 			}
+			if(count==1)
+			{
+				for(i=0;i<n;i++)
+				{
+					int_f1 += h * (f1(x[i]) + f1(x[i+1]))/2.0;
+				}
+				count++;
+			}
+			if(count==2)
+			{
+				for(i=0;i<n;i++)
+				{
+					int_f2 += h * (f2(x[i]) + f2(x[i+1]))/2.0;
+				}
+				count++;
+			}
+			if(count==3)
+			{
+				for(i=0;i<n;i++)
+				{
+					int_f3 += h * (f3(x[i]) + f3(x[i+1]))/2.0;
+				}
+				count++;
+			}
+			cout<<"N: "<<n<<" "<<"f1: "<<int_f1<<" f2: "<<int_f2<<" f3: "<<int_f3<<endl;	
 		}
 	}
-	gaussianElimination(system, w, n);
-	for (i=0;i<n;i++) 
-	{
-		printf("The zeros and weights are given by: \n");
-		printf("%s %18s\n","x_i", "w_i");
-		for(i=0;i<n;i++)
-		{
-			if(zero[i]>=0) { printf("+%.15f ", zero[i]); }
-			else{ printf("%.15f ", zero[i]); }
-			if(w[i]>=0) { printf("+%.15f\n", w[i]); }
-			else{ printf("%.15f\n", w[i]); }
-		}
-	}
-	delete[] x, w;
-	for (i = 0; i < n; i++) { delete[] system[i]; }
-	delete[] system;
-
 
 	return 0;
 }
