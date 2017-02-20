@@ -207,7 +207,7 @@ int main()
 {
 	int n;	
 	double* gqIntegrals = new double[3];
-	/*double* trapIntegrals = new double[3];
+	double* trapIntegrals = new double[3];
 	printf("approximating using the Trapezoidal Rule\n");
 	printf("%s %s %25s %15s\n", "N", "x^8", "cos(pi*x/2)", "1/(x^2+1)");
 	for(n=0;n<=10;n++)
@@ -215,7 +215,7 @@ int main()
 		trapIntegrals = trapRule(n);
 		printf("%d %.15f %.15f %.15f\n", n, trapIntegrals[0], trapIntegrals[1], trapIntegrals[2]);
 	}
-	delete[] trapIntegrals;*/
+	delete[] trapIntegrals;
 	printf("\napproximating using Gaussian Quadrature\n");
 	printf("%s %s %25s %15s\n", "N", "x^8", "cos(pi*x/2)", "1/(x^2+1)");
 	for(n=0;n<=10;n++)
