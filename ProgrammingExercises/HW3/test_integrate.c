@@ -141,7 +141,7 @@ int main()
 	double int_f3 = 0.0;
 	while(count<4)
 	{
-		for(n=2; n<=15; n++)
+		for(n=2; n<=10; n++)
 		{
 			h = 2.0/n;
 			double* x = new double[n+1];
