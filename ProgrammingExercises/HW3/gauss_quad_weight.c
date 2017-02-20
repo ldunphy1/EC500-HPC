@@ -120,7 +120,6 @@ int main()
 	int n, i, k;
 	cout<<"What value of N? \n";
 	cin>>n;
-	double* x = new double[n];
 	double* w = new double[n];
 	double** system = new double*[n];
 	double* zero = new double[n+1];
@@ -136,13 +135,11 @@ int main()
 	{
 		if(k%2)
 		{
-			x[k] = 0.0;
-			w[k] = x[k];
+			w[k] = 0.0;
 		}
 		else
 		{
-			x[k] = 2.0/(k+1.0);
-			w[k] = x[k];
+			w[k] = 2.0/(k+1.0);
 		}
 	}
 	for(i=0;i<n;i++)
@@ -170,7 +167,7 @@ int main()
 			else{ printf("%.15f\n", w[i]); }
 		}
 	}
-	delete[] x, w;
+	delete[] w, zero;
 	for (i = 0; i < n; i++) { delete[] system[i]; }
 	delete[] system;
 
