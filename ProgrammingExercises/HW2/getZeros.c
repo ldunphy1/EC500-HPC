@@ -7,7 +7,7 @@
 
 using namespace std;
 
-int getLegendreCoeff(double* a, int n)
+void getLegendreCoeff(double* a, int n)
 {		
 	a[0+0*(n+1)] = 1.0; //set P0
 	a[1+1*(n+1)] = 1.0; //set P1
@@ -16,8 +16,7 @@ int getLegendreCoeff(double* a, int n)
     	a[0 +pn*(n+1)] = -((pn-1)*a[0 + (pn-2)*(n+1)])/(double) pn;
         for(int i =1;i < pn+1;i++)
     		a[i+pn*(n+1)] = ((2*pn-1)*a[i-1 +(pn-1)*(n+1)] - (pn-1)*a[i + (pn-2)*(n+1)])/(double) pn;
-    }
-	return 1;		
+    }		
 }
 double func(double* a, double x, int n)
 {
@@ -33,22 +32,22 @@ double fprime(double* a, double x, int n)
 	double sum = a[1];
 	for(int i=2;i<=n;i++)
 	{
-		sum += a[i] * i * pow(x,i-1);
+		sum += a[i] * i * pow(x,i-1.0);
 	}
 	return sum;
 }
 
-int getLegendreZero(double* zero, double* a, int n)
+void getLegendreZero(double* zero, double* a, int n)
 {
 	int k, count=0;
-	double xprev, xnext, f, fp;
+	double xprev, xnext, f, fp = 0.0;
 	bool initial=true;
 	for (k=1;k<=n;k++)
 	{
 		initial = true;
-		xprev = (1.0 - (1.0/(8.0 * pow(n,2.0))) + (1.0/(8.0 * pow(n,3)))) * cos(PI * (4.0*k - 1.0)/(4.0*n + 2.0));
+		xprev = (1.0 - (1.0/(8.0 * pow(n,2.0))) + (1.0/(8.0 * pow(n,3.0)))) * cos(PI * (4.0*k - 1.0)/(4.0*n + 2.0));
 		xnext = 2.0;
-		while ( (abs((xnext-xprev)/xprev) >= TOL) && (xprev!=0) )
+		while ( (abs((xnext-xprev)/xprev) >= TOL) && (xprev!=0.0) )
 		{
 			if(initial==false)
 			{
@@ -62,7 +61,6 @@ int getLegendreZero(double* zero, double* a, int n)
 		}
 		zero[k-1] = xnext;
 	} 
-	return 0;
 }
 
 int main()

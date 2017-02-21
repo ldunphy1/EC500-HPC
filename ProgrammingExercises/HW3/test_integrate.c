@@ -8,11 +8,15 @@
 
 using namespace std;
 
-int gaussianElimination(double** A, double* b, int dim)
+void gaussianElimination(double** A, double* b, int dim)
 { 
-	int max, i, j, k;
-	double* tempA;
-	double tempB, factor, sum;
+	int max, i, j, k = 0;
+	double* tempA = new double[dim];
+	for(i=0;i<dim; i++)
+	{
+		tempA[i] = 0.0;
+	}
+	double tempB, factor, sum = 0.0;
 	for(i=0;i<dim;i++)
 	{
 		max = i;
@@ -41,6 +45,10 @@ int gaussianElimination(double** A, double* b, int dim)
 	}
 	//delete[] tempA;
 	double* temp = new double[dim];
+	for(i=0;i<dim;i++)
+	{
+		temp[i] = 1.0;
+	}
 	for(i=dim-1;i>=0;i--)
 	{
 		sum = 0.0;
@@ -51,11 +59,10 @@ int gaussianElimination(double** A, double* b, int dim)
 		temp[i] = (b[i] - sum) / A[i][i];
 		b[i] = temp[i];
 	}
-	delete[] temp;
-    return(0);
+	//delete[] temp;
 }
 
-int getLegendreCoeff(double* a, int n)
+void getLegendreCoeff(double* a, int n)
 {		
 	a[0+0*(n+1)] = 1.0; //set P0
 	a[1+1*(n+1)] = 1.0; //set P1
@@ -64,8 +71,7 @@ int getLegendreCoeff(double* a, int n)
     	a[0 +pn*(n+1)] = -((pn-1)*a[0 + (pn-2)*(n+1)])/(double) pn;
         for(int i =1;i < pn+1;i++)
     		a[i+pn*(n+1)] = ((2*pn-1)*a[i-1 +(pn-1)*(n+1)] - (pn-1)*a[i + (pn-2)*(n+1)])/(double) pn;
-    }
-	return 1;		
+    }			
 }
 
 double func(double* a, double x, int n)
@@ -83,22 +89,22 @@ double fprime(double* a, double x, int n)
 	double sum = a[1];
 	for(int i=2;i<=n;i++)
 	{
-		sum += a[i] * i * pow(x,i-1);
+		sum += a[i] * i * pow(x,i-1.0);
 	}
 	return sum;
 }
 
-int getLegendreZero(double* zero, double* a, int n)
+void getLegendreZero(double* zero, double* a, int n)
 {
 	int k, count=0;
-	double xprev, xnext, f, fp;
+	double xprev, xnext, f, fp = 0.0;
 	bool initial=true;
 	for (k=1;k<=n;k++)
 	{
 		initial = true;
-		xprev = (1.0 - (1.0/(8.0 * pow(n,2.0))) + (1.0/(8.0 * pow(n,3)))) * cos(PI * (4.0*k - 1.0)/(4.0*n + 2.0));
+		xprev = (1.0 - (1.0/(8.0 * pow(n,2.0))) + (1.0/(8.0 * pow(n,3.0)))) * cos(PI * (4.0*k - 1.0)/(4.0*n + 2.0));
 		xnext = 2.0;
-		while ( (abs((xnext-xprev)/xprev) >= TOL) && (xprev!=0) )
+		while ( (abs((xnext-xprev)/xprev) >= TOL) && (xprev!=0.0) )
 		{
 			if(initial==false)
 			{
@@ -112,7 +118,6 @@ int getLegendreZero(double* zero, double* a, int n)
 		}
 		zero[k-1] = xnext;
 	} 
-	return 0;
 }
 
 double f1(double x)
@@ -129,12 +134,14 @@ double f3(double x)
 {
 	return (1.0/(pow(x,2.0)+1.0));
 }
-double* trapRule(int n)
+void trapRule(int n, double* trapIntegrals)
 {
-	int i;
-	double h;
-	double* trapIntegrals = new double[3];
-	h = 2.0/n;
+	int i = 0;
+	for (i = 0; i < 3; i++)
+	{
+		trapIntegrals[i] = 0.0;
+	}
+	double h = 2.0/n;
 	double* x = new double[n+1];
 	x[0] = -1.0;
 	x[n] = 1.0; 
@@ -148,21 +155,43 @@ double* trapRule(int n)
 		trapIntegrals[1] += h * (f2(x[i]) + f2(x[i+1]))/2.0;
 		trapIntegrals[2] += h * (f3(x[i]) + f3(x[i+1]))/2.0;
 	}
-
-	return trapIntegrals;	
+	delete[] x;
 }
-double* gaussQuad(int n)
+void gaussQuad(int n, double* gqIntegrals)
 {
-	int i, k;
-	double* gqIntegrals = new double[3];
-	double* w = new double[n+1];
+	int i, k = 0;
+	for (i = 0; i < 3; i++)
+	{
+		gqIntegrals[i] = 0.0;
+	}
+	double* w = new double[n];
 	double** system = new double*[n];
 	double* zero = new double[n+1];
 	double* a = new double[n+1];
 	double* A = new double[(n+1)*(n+1)];
+	for(int i=0; i<n+1;i++)
+	{
+		zero[i] = 0.0;
+		a[i] = 0.0;
+	}
+	for(int i=0;i<(n+1)*(n+1);i++)
+	{
+		A[i] =0.0;
+	}
 	for (i=0;i<n;i++) { system[i] = new double[n]; }
 	getLegendreCoeff(A, n);
-	for (i=0;i<n+1;i++) { a[i] =A[i + n*(n+1)]; }
+	for (i=0;i<=n;i++) 
+	{ 
+		a[i] = A[i + n*(n+1)]; 
+	}
+	for(i=0;i<n;i++)
+	{
+		w[i] = 0.0;
+		for(k=0;k<n;k++)
+		{
+			system[i][k] = 0.0;
+		}
+	}
 	delete[] A;
 	getLegendreZero(zero, a, n);
 	delete[] a;
@@ -182,7 +211,7 @@ double* gaussQuad(int n)
 		for(k=0;k<n;k++)
 		{
 			if(i==0) { system[i][k] = 1.0; }
-			if(i==1){ system[i][k] = zero[k] ;}
+			if(i==1){ system[i][k] = zero[k];}
 			else
 			{
 				system[i][k] = pow(zero[k], i);
@@ -190,8 +219,8 @@ double* gaussQuad(int n)
 		}
 	}
 	gaussianElimination(system, w, n);
-	//for (i = 0; i < n; i++) { delete[] system[i]; }
-	//delete[] system;
+	for (i = 0; i < n; i++) { delete[] system[i]; }
+	delete[] system;
 	for(i=1;i<=n;i++)
 	{
 		gqIntegrals[0] += w[i] * f1(zero[i]);
@@ -199,31 +228,33 @@ double* gaussQuad(int n)
 		gqIntegrals[2] += w[i] * f3(zero[i]);
 	}
 	delete[] w, zero;
-
-	return gqIntegrals;
 }
 
 int main()
 {
-	int n;	
+	int i, n = 0;	
 	double* gqIntegrals = new double[3];
 	double* trapIntegrals = new double[3];
+	for (i = 0; i < 3; i++)
+	{
+		gqIntegrals[i] = trapIntegrals[i] = 0.0;
+	}
 	printf("approximating using the Trapezoidal Rule\n");
 	printf("%s %s %25s %15s\n", "N", "x^8", "cos(pi*x/2)", "1/(x^2+1)");
-	for(n=0;n<=10;n++)
+	for(n=2;n<=15;n++)
 	{
-		trapIntegrals = trapRule(n);
+		trapRule(n, trapIntegrals);
 		printf("%d %.15f %.15f %.15f\n", n, trapIntegrals[0], trapIntegrals[1], trapIntegrals[2]);
 	}
 	delete[] trapIntegrals;
 	printf("\napproximating using Gaussian Quadrature\n");
 	printf("%s %s %25s %15s\n", "N", "x^8", "cos(pi*x/2)", "1/(x^2+1)");
-	for(n=0;n<=10;n++)
+	for(n=2;n<=15;n++)
 	{
-		gqIntegrals = gaussQuad(n);
+		gaussQuad(n, gqIntegrals);
 		printf("%d %.15f %.15f %.15f\n", n, gqIntegrals[0], gqIntegrals[1], gqIntegrals[2]);
-
 	}	
+	delete[] gqIntegrals;
 
 	return 0;
 }
