@@ -43,11 +43,10 @@ void gaussianElimination(double** A, double* b, int dim)
 			}
 		}
 	}
-	//delete[] tempA;
 	double* temp = new double[dim];
 	for(i=0;i<dim;i++)
 	{
-		temp[i] = 1.0;
+		temp[i] = 0.0;
 	}
 	for(i=dim-1;i>=0;i--)
 	{
@@ -59,7 +58,7 @@ void gaussianElimination(double** A, double* b, int dim)
 		temp[i] = (b[i] - sum) / A[i][i];
 		b[i] = temp[i];
 	}
-	//delete[] temp;
+	delete[] tempA, temp;
 }
 
 void getLegendreCoeff(double* a, int n)
@@ -192,9 +191,7 @@ void gaussQuad(int n, double* gqIntegrals)
 			system[i][k] = 0.0;
 		}
 	}
-	delete[] A;
 	getLegendreZero(zero, a, n);
-	delete[] a;
 	for(k=0;k<n;k++)
 	{
 		if(k%2)
@@ -219,15 +216,13 @@ void gaussQuad(int n, double* gqIntegrals)
 		}
 	}
 	gaussianElimination(system, w, n);
-	for (i = 0; i < n; i++) { delete[] system[i]; }
-	delete[] system;
-	for(i=1;i<=n;i++)
+	for(i=0;i<n;i++)
 	{
 		gqIntegrals[0] += w[i] * f1(zero[i]);
 		gqIntegrals[1] += w[i] * f2(zero[i]);
 		gqIntegrals[2] += w[i] * f3(zero[i]);
 	}
-	delete[] w, zero;
+	delete[] w, zero, A, a;
 }
 
 int main()
@@ -237,7 +232,8 @@ int main()
 	double* trapIntegrals = new double[3];
 	for (i = 0; i < 3; i++)
 	{
-		gqIntegrals[i] = trapIntegrals[i] = 0.0;
+		gqIntegrals[i] = 0.0;
+		trapIntegrals[i] = 0.0;
 	}
 	printf("approximating using the Trapezoidal Rule\n");
 	printf("%s %s %25s %15s\n", "N", "x^8", "cos(pi*x/2)", "1/(x^2+1)");
@@ -246,7 +242,6 @@ int main()
 		trapRule(n, trapIntegrals);
 		printf("%d %.15f %.15f %.15f\n", n, trapIntegrals[0], trapIntegrals[1], trapIntegrals[2]);
 	}
-	delete[] trapIntegrals;
 	printf("\napproximating using Gaussian Quadrature\n");
 	printf("%s %s %25s %15s\n", "N", "x^8", "cos(pi*x/2)", "1/(x^2+1)");
 	for(n=2;n<=15;n++)
@@ -254,7 +249,7 @@ int main()
 		gaussQuad(n, gqIntegrals);
 		printf("%d %.15f %.15f %.15f\n", n, gqIntegrals[0], gqIntegrals[1], gqIntegrals[2]);
 	}	
-	delete[] gqIntegrals;
+	delete[] gqIntegrals, trapIntegrals;
 
 	return 0;
 }
