@@ -231,39 +231,24 @@ int main()
 	double* gqIntegrals = new double[3];
 	double* trapIntegrals = new double[3];
 	double* exact = new double[3];
-	double* errorT = new double[3];
-	double* errorG = new double[3];
+	double* error = new double[3];
+	exact[0] = 0.222222222222222;
+	exact[1] = 1.27323954473516;
+	exact[2] = 1.570796326794897;
 	for (i = 0; i < 3; i++)
 	{
 		gqIntegrals[i] = 0.0;
 		trapIntegrals[i] = 0.0;
-		exact[i] = 0.0;
-		errorT[i] = 0.0;
-		errorG[i] = 0.0;
 	}
-	exact[0] = 0.222222222222222;
-	exact[1] = 1.27323954473516;
-	exact[2] = 1.570796326794897;
+	//printf("approximating using the Trapezoidal Rule\n");
+	//printf("%s %s %25s %15s\n", "N", "x^8", "cos(pi*x/2)", "1/(x^2+1)");
 	for(n=2;n<=15;n++)
 	{
 		trapRule(n, trapIntegrals);
 		gaussQuad(n, gqIntegrals);
-		errorT[0] = (exact[0]-trapIntegrals[0])/exact[0];
-		errorT[1] = (exact[1]-trapIntegrals[1])/exact[1];
-		errorT[2] = (exact[2]-trapIntegrals[2])/exact[2];
-		errorG[0] = (exact[0]-gqIntegrals[0])/exact[0];
-		errorG[1] = (exact[1]-gqIntegrals[1])/exact[1];
-		errorG[2] = (exact[2]-gqIntegrals[2])/exact[2];
-		printf("%d %.15f %.15f %.15f %.15f %.15f %.15f\n", n, errorT[0], errorG[0], errorT[1], errorG[1], errorT[2], errorG[2]);
+		printf("%d %.15f %.15f %.15f %.15f %.15f %.15f %.15f %.15f %.15f\n", n, trapIntegrals[0], gqIntegrals[0], exact[0], trapIntegrals[1], gqIntegrals[1], exact[1], trapIntegrals[2], gqIntegrals[2], exact[2]);
 	}
-	/*printf("approximating using the Trapezoidal Rule\n");
-	printf("%s %s %25s %15s\n", "N", "x^8", "cos(pi*x/2)", "1/(x^2+1)");
-	for(n=2;n<=15;n++)
-	{
-		trapRule(n, trapIntegrals);
-		printf("%d %.15f %.15f %.15f\n", n, trapIntegrals[0], trapIntegrals[1], trapIntegrals[2]);
-	}
-	printf("\napproximating using Gaussian Quadrature\n");
+	/*printf("\napproximating using Gaussian Quadrature\n");
 	printf("%s %s %25s %15s\n", "N", "x^8", "cos(pi*x/2)", "1/(x^2+1)");
 	for(n=2;n<=15;n++)
 	{
