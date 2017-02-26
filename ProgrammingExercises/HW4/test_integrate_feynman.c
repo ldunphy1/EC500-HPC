@@ -3,23 +3,15 @@
 #include <iostream>
 #include <iomanip>
 #include <cmath>
+#include <omp.h>
 #define PI 3.14159265358979323846
 #define TOL 1.0E-8
 
 using namespace std;
-double g1(double x, double y)
-{
-	return (pow(x, 8.0) + pow(y, 8.0) + pow((y - 1.0), 3.0) * pow((x - 3.0), 5.0));
-}
 
-double g2(double x, double y)
+double f(double p0, double p1, double p2, double p3, double m)
 {
-	return sqrt(pow(x, 2.0) - pow(y, 2.0) + 2.0);
-}
-
-double g3(double x, double y)
-{
-	return (exp(-pow(x, 2.0) - (pow(y, 2.0)/8.0)) * cos(PI * x) * sin(x * PI/8.0));
+	return (1/pow((pow(sin(pi*p0/2.0), 2.0) + (pow(sin(pi*p1/2.0), 2.0)) + pow(sin(pi*p2/2.0), 2.0) + pow(sin(pi*p3/2.0), 2.0) + pow(m, 2.0)), 2.0));
 }
 
 void gaussianElimination(double** A, double* b, int dim)
@@ -133,73 +125,27 @@ void getLegendreZero(double* zero, double* a, int n)
 	} 
 }
 
-void trapRule(int n, double* trapIntegrals)
-{
-	int i = 0;
-	int j = 0;
-	double h = 2.0/n;
-	double trapInt1A = 0.0;
-	double trapInt1B = 0.0;
-	double trapInt1C = 0.0;
-	double trapInt2A = 0.0;
-	double trapInt2B = 0.0;
-	double trapInt2C = 0.0;
-	double trapInt3A = 0.0;
-	double trapInt3B = 0.0;
-	double trapInt3C = 0.0;
-	double* x = new double[n+1];
-	double* y = new double[n+1];
-	for (i = 0; i < 3; i++)
-	{
-		trapIntegrals[i] = 0.0;
-	}		
-	x[0] = -1.0;
-	x[n] = 1.0; 
-	y[0] = -1.0;
-	y[n] = 1.0;
-	for(i=1;i<n;i++)
-	{
-		x[i] = -1.0 + (2.0 * i/n);
-		y[i] = -1.0 + (2.0 * i/n);
-	}
-	for(i=0;i<n;i++)
-	{
-		for(j=0;j<n;j++)
-		{
-			trapInt1A += g1(x[j], y[i]);
-			trapInt2A += g2(x[j], y[i]);
-			trapInt3A += g3(x[j], y[i]);
-			trapInt1B += g1(x[0], y[i]) + g1(x[n], y[i]);
-			trapInt2B += g2(x[0], y[i]) + g2(x[n], y[i]);
-			trapInt3B += g3(x[0], y[i]) + g3(x[n], y[i]);
-			trapInt1C += g1(x[j], y[0]) + g1(x[j], y[n]);
-			trapInt2C += g2(x[j], y[0]) + g2(x[j], y[n]);
-			trapInt3C += g3(x[j], y[0]) + g3(x[j], y[n]);
-		}
-	}
-	trapIntegrals[0] = (pow(h, 2.0)/4) * (g1(x[0], y[0]) + g1(x[0], y[n]) + g1(x[n], y[n]) + 4*trapInt1A + 2*trapInt1B + 2*trapInt1C);
-	trapIntegrals[1] = (pow(h, 2.0)/4) * (g2(x[0], y[0]) + g2(x[0], y[n]) + g2(x[n], y[n]) + 4*trapInt2A + 2*trapInt2B + 2*trapInt2C);
-	trapIntegrals[2] = (pow(h, 2.0)/4) * (g3(x[0], y[0]) + g3(x[0], y[n]) + g3(x[n], y[n]) + 4*trapInt3A + 2*trapInt3B + 2*trapInt3C);
-	delete[] x, y;
-}
 void gaussQuad(int n, double* gqIntegrals)
 {
-	int i, j, k = 0;
-	for (i = 0; i < 3; i++)
-	{
-		gqIntegrals[i] = 0.0;
-	}
+	int i, j, k, l = 0;
+	double m = 0.0;
+	double gqIntegral = 0.0;
 	double* w = new double[n];
 	double** system = new double*[n];
 	double* zero = new double[n+1];
 	double* a = new double[n+1];
 	double* A = new double[(n+1)*(n+1)];
-	for(int i=0; i<n+1;i++)
+	m[0] = 1/sqrt(10);
+	for(i=1;i<10;i++)
+	{
+		m[i] = m[i-1]+(10*sqrt(10));
+	}
+	for(i=0; i<n+1;i++)
 	{
 		zero[i] = 0.0;
 		a[i] = 0.0;
 	}
-	for(int i=0;i<(n+1)*(n+1);i++)
+	for(i=0;i<(n+1)*(n+1);i++)
 	{
 		A[i] =0.0;
 	}
@@ -242,13 +188,24 @@ void gaussQuad(int n, double* gqIntegrals)
 		}
 	}
 	gaussianElimination(system, w, n);
-	for(j=0;j<n;j++)
+	#pragma omp parallel for shared(w,zero,m) reduction(+:gqIntegral)
 	{
-		for(i=0; i<n; i++)
+		for(h=0;h<10;h++)
 		{
-			gqIntegrals[0] += w[i] * w[j] * g1(zero[i], zero[j]);
-			gqIntegrals[1] += w[i] * w[j] * g2(zero[i], zero[j]);
-			gqIntegrals[2] += w[i] * w[j] * g3(zero[i], zero[j]);
+			for(i=0;i<n;i++)
+			{
+				for(j=0;j<n;j++)
+				{
+					for(k=0;k<n;k++)
+					{
+						for(l=0;l<n;l++)
+						{
+							gqIntegral += w[i] * w[j] * w[k] * w[l] * f(zero[l], zero[k], zero[j], zero[i], m[h]);
+						}
+					}
+					
+				}
+			}
 		}
 	}
 	delete[] w, zero, A, a;
@@ -257,36 +214,11 @@ void gaussQuad(int n, double* gqIntegrals)
 int main()
 {
 	int i, n = 0;	
-	double* gqIntegrals = new double[3];
-	double* trapIntegrals = new double[3];
-	// double* exact = new double[3];
-	// double* error = new double[3];
-	// exact[0] = 2688.88888888889
-	// exact[1] = 5.62421;
-	// exact[2] = 0;
-	for (i = 0; i < 3; i++)
-	{
-		gqIntegrals[i] = 0.0;
-		trapIntegrals[i] = 0.0;
-	}
-	printf("approximating using the Trapezoidal Rule\n");
-	printf("%s %s %25s %15s\n", "N", "g1", "g2", "g3");
 	for(n=2;n<=15;n++)
 	{
-		trapRule(n, trapIntegrals);
+		gaussQuad(n, trapIntegrals);
 		printf("%d %.15f %.15f %.15f\n", n, trapIntegrals[0], trapIntegrals[1], trapIntegrals[2]);
-		//gaussQuad(n, gqIntegrals);
-		//printf("%d %.15f %.15f %.15f %.15f %.15f %.15f %.15f %.15f %.15f\n", n, trapIntegrals[0], gqIntegrals[0], exact[0], trapIntegrals[1], gqIntegrals[1], exact[1], trapIntegrals[2], gqIntegrals[2], exact[2]);
 	}
-	printf("\napproximating using Gaussian Quadrature\n");
-	printf("%s %s %25s %15s\n", "N", "g1", "g2", "g3");
-	for(n=2;n<=15;n++)
-	{
-		gaussQuad(n, gqIntegrals);
-		printf("%d %.15f %.15f %.15f\n", n, gqIntegrals[0], gqIntegrals[1], gqIntegrals[2]);
-	}	
-	delete[] gqIntegrals, trapIntegrals;
-
 	return 0;
 }
 	
