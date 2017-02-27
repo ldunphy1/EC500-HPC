@@ -11,7 +11,7 @@ using namespace std;
 
 double f(double p0, double p1, double p2, double p3, double m)
 {
-	return (1/pow((pow(sin(pi*p0/2.0), 2.0) + (pow(sin(pi*p1/2.0), 2.0)) + pow(sin(pi*p2/2.0), 2.0) + pow(sin(pi*p3/2.0), 2.0) + pow(m, 2.0)), 2.0));
+	return (1/pow((pow(sin(PI*p0/2.0), 2.0) + (pow(sin(PI*p1/2.0), 2.0)) + pow(sin(PI*p2/2.0), 2.0) + pow(sin(PI*p3/2.0), 2.0) + pow(m, 2.0)), 2.0));
 }
 
 void gaussianElimination(double** A, double* b, int dim)
@@ -125,21 +125,15 @@ void getLegendreZero(double* zero, double* a, int n)
 	} 
 }
 
-void gaussQuad(int n, double* gqIntegrals)
+double gaussQuad(int n, double m)
 {
 	int i, j, k, l = 0;
-	double m = 0.0;
 	double gqIntegral = 0.0;
 	double* w = new double[n];
 	double** system = new double*[n];
 	double* zero = new double[n+1];
 	double* a = new double[n+1];
 	double* A = new double[(n+1)*(n+1)];
-	m[0] = 1/sqrt(10);
-	for(i=1;i<10;i++)
-	{
-		m[i] = m[i-1]+(10*sqrt(10));
-	}
 	for(i=0; i<n+1;i++)
 	{
 		zero[i] = 0.0;
@@ -188,36 +182,36 @@ void gaussQuad(int n, double* gqIntegrals)
 		}
 	}
 	gaussianElimination(system, w, n);
-	#pragma omp parallel for shared(w,zero,m) reduction(+:gqIntegral)
+	#pragma omp parallel for shared(m) reduction(+:gqIntegral)		
+	for(i=0;i<n;i++)
 	{
-		for(h=0;h<10;h++)
+		for(j=0;j<n;j++)
 		{
-			for(i=0;i<n;i++)
+			for(k=0;k<n;k++)
 			{
-				for(j=0;j<n;j++)
+				for(l=0;l<n;l++)
 				{
-					for(k=0;k<n;k++)
-					{
-						for(l=0;l<n;l++)
-						{
-							gqIntegral += w[i] * w[j] * w[k] * w[l] * f(zero[l], zero[k], zero[j], zero[i], m[h]);
-						}
-					}
-					
+					gqIntegral += w[i] * w[j] * w[k] * w[l] * f(zero[l], zero[k], zero[j], zero[i], m);
 				}
 			}
 		}
-	}
+	}		
 	delete[] w, zero, A, a;
+	return gqIntegral;
 }
 
 int main()
 {
 	int i, n = 0;	
-	for(n=2;n<=15;n++)
+	double m = 0.0;
+	double Integral = 0.0;
+	for(m=pow(10.0,-0.5); m<=10.0;m*=pow(10.0,1.0/6.0))
 	{
-		gaussQuad(n, trapIntegrals);
-		printf("%d %.15f %.15f %.15f\n", n, trapIntegrals[0], trapIntegrals[1], trapIntegrals[2]);
+		for(n=2;n<=15;n++)
+		{
+			Integral = gaussQuad(n, m);
+			printf("%d %.15f\n", n, Integral);
+		}
 	}
 	return 0;
 }
