@@ -3,6 +3,7 @@
 #include <iostream>
 #include <iomanip>
 #include <cmath>
+#define MAX 100000
 
 using namespace std;
 
@@ -10,6 +11,7 @@ int main()
 {
 	int i = 0;
 	int j = 0;
+	int k = 0;
 	int N = 0;
 	for(N=10; N<10000; N*=10)
 	{
@@ -26,21 +28,23 @@ int main()
 			temp[i] = 0.0;
 		}
 		b[N] = 1.0;
-		do
+		for(k=0;k<MAX;k++)
 		{
 			for(i=1;i<2*N;i++)
 			{
 				temp[i] = 0.5*(T[i+1]+T[i-1]) + b[i];
-				for(j=i;j<2*N;j++)
-				{
-					T[j] = temp[j];
-					r[j] = b[j] - (T[j] - 0.5*(T[j-1]+T[j+1]));
-					num += r[j] * r[j];
-					den += b[j] * b[j];
-				}
-				printf("%f ", r[i]);
 			}
-		}while( (sqrt(num)/sqrt(den)) > pow(10.0,-6.0));
+			for(j=i;j<2*N;j++)
+			{
+				T[j] = temp[j];				
+			}
+			r[i] = b[i] - (T[i] - 0.5*(T[i-1]+T[i+1]));
+			num += r[i] * r[i];
+			den += b[i] * b[i];
+			printf("%f ", r[i]);
+			if((sqrt(num)/sqrt(den)) < pow(10.0,-6.0))
+				return 0;
+		}
 	}
 
 	return 0;
