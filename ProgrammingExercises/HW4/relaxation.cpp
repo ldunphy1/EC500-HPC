@@ -11,7 +11,7 @@ int main()
 	int i = 0;
 	int j = 0;
 	int N = 0;
-	for(N=0; N<10000; N*=10)
+	for(N=10; N<10000; N*=10)
 	{
 		double* T = new double[2*N+1];
 		double* b = new double[2*N+1];
@@ -35,10 +35,10 @@ int main()
 				{
 					T[j] = temp[j];
 					r[j] = b[j] - (T[j] - 0.5*(T[j-1]+T[j+1]));
-					printf("%f ", r[i]);
 					num += r[j] * r[j];
 					den += b[j] * b[j];
 				}
+				printf("%f ", r[i]);
 			}
 		}while( (sqrt(num)/sqrt(den)) > pow(10.0,-6.0));
 	}
