@@ -38,7 +38,7 @@ int main()
 			{
 				T[j] = temp[j];				
 			}
-			for(i=0;i<2*N;i++)
+			for(i=0;i<=2*N;i++)
 			{
 				r[i] = b[i] - (T[i] - 0.5*(T[i-1]+T[i+1]));
 				num += r[i] * r[i];
