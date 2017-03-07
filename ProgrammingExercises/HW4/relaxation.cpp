@@ -47,7 +47,7 @@ int main()
 			}
 			if((sqrt(num)/sqrt(den)) < pow(10.0,-6.0))
 				return 0;
-			printf("\n");
+			printf("\n\n");
 		}
 	}
 
