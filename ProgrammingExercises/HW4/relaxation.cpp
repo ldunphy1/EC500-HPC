@@ -38,10 +38,13 @@ int main()
 			{
 				T[j] = temp[j];				
 			}
-			r[i] = b[i] - (T[i] - 0.5*(T[i-1]+T[i+1]));
-			num += r[i] * r[i];
-			den += b[i] * b[i];
-			printf("%f ", r[i]);
+			for(i=0;i<2*N;i++)
+			{
+				r[i] = b[i] - (T[i] - 0.5*(T[i-1]+T[i+1]));
+				num += r[i] * r[i];
+				den += b[i] * b[i];
+				printf("%f ", r[i]);
+			}
 			if((sqrt(num)/sqrt(den)) < pow(10.0,-6.0))
 				return 0;
 		}
