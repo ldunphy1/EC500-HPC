@@ -3,7 +3,8 @@
 #include <iostream>
 #include <iomanip>
 #include <cmath>
-#define MAX 10000000
+#include <omp.h>
+#define MAX 1000000
 
 using namespace std;
 
@@ -28,12 +29,15 @@ int jacobi(int N)
 	b[N] = 1.0;
 	for(k=0;k<MAX;k++)
 	{
+		#pragma omp parallel for shared(N, temp, T, b)
 		for(i=1;i<2*N;i++)
 			temp[i] = 0.5*(T[i+1]+T[i-1]) + b[i];
+		#pragma omp parallel for shared(N, temp, T, b)
 		for(j=1;j<2*N;j++)
 			T[j] = temp[j];		
 		num = 0.0;
-		den = 0.0;		
+		den = 0.0;	
+		#pragma omp parallel for shared(N, T, b, r) reductions(+:num, den)	
 		for(i=1;i<2*N;i++)
 		{
 			r[i] = b[i] - (T[i] - 0.5*(T[i-1]+T[i+1]));
@@ -48,7 +52,7 @@ int jacobi(int N)
 		}
 	}
 	printf("Reached MAX interations\n");
-	return 0.0;
+	return 0;
 }
 
 int main()
