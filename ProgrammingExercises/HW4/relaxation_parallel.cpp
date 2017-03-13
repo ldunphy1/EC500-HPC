@@ -37,7 +37,7 @@ int jacobi(int N)
 			T[j] = temp[j];		
 		num = 0.0;
 		den = 0.0;	
-		#pragma omp parallel for shared(N, T, b, r) reductions(+:num, den)	
+		#pragma omp parallel for shared(N, T, b, r) reduction(+:num, den)	
 		for(i=1;i<2*N;i++)
 		{
 			r[i] = b[i] - (T[i] - 0.5*(T[i-1]+T[i+1]));
