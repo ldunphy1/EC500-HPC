@@ -210,7 +210,7 @@ int main()
 		for(n=2;n<=15;n++)
 		{
 			Integral = gaussQuad(n, m);
-			printf("%d %.15f\n", n, Integral);
+			printf("%d %.15f %.15f\n", n, m, Integral);
 		}
 	}
 	return 0;

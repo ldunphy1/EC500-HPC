@@ -3,11 +3,11 @@
 #include <iostream>
 #include <iomanip>
 #include <cmath>
-#define MAX 10000000
+#define MAX 1000000
 
 using namespace std;
 
-int jacobi(int N)
+void jacobi(int N)
 {
 	int i = 0;
 	int j = 0;
@@ -41,22 +41,24 @@ int jacobi(int N)
 			den += b[i] * b[i];
 		}
 		normResidual = sqrt(num)/sqrt(den);
+		printf("%d %.10e\n", k, normResidual);
 		if(normResidual < pow(10.0,-6.0))
 		{
-			printf("%f\n", normResidual);
-			return k;
+			//printf("%d %d %.10e\n", k, N, normResidual);
+			return;
 		}
 	}
 	printf("Reached MAX interations\n");
-	return 0.0;
 }
 
 int main()
 {
 	int iterations = 0;
-	for(int N =10; N<10000; N+=10)
-	{
-		iterations = jacobi(N);
-		printf("%d %d\n", N, iterations);
-	}
+	int N = 10000;
+	jacobi(N);
+	// for(int i=0; i<16; i++)
+	// {
+	// 	N *= 2;
+	// 	jacobi(N);
+	// }
 }
