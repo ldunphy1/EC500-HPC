@@ -3,7 +3,8 @@
 #include <iostream>
 #include <iomanip>
 #include <cmath>
-#define MAX 10000
+#include <omp.h>
+#define MAX 10000000
 
 using namespace std;
 
@@ -28,12 +29,15 @@ void jacobi(int N)
 	b[N] = 1.0;
 	for(k=0;k<MAX;k++)
 	{
+		#pragma omp parallel for shared(N, temp, T, b)
 		for(i=1;i<2*N;i++)
 			temp[i] = 0.5*(T[i+1]+T[i-1]) + b[i];
+		#pragma omp parallel for shared(N, temp, T)
 		for(j=1;j<2*N;j++)
 			T[j] = temp[j];		
 		num = 0.0;
-		den = 0.0;		
+		den = 0.0;	
+		#pragma omp parallel for shared(N, T, b, r) reduction(+:num, den)	
 		for(i=1;i<2*N;i++)
 		{
 			r[i] = b[i] - (T[i] - 0.5*(T[i-1]+T[i+1]));
@@ -43,7 +47,7 @@ void jacobi(int N)
 		normResidual = sqrt(num)/sqrt(den);
 		if(normResidual < pow(10.0,-6.0))
 		{
-			printf("%d %d\n", N, k);
+			printf("%d %d %.10e\n", k, N, normResidual);
 			return;
 		}
 	}
