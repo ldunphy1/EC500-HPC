@@ -34,7 +34,7 @@ int main(int argc, char** argv)
    double bmag, resmag;
    int local_size;
 
-   for(int N=16; N<=16384; N*=4)
+   for(N=16; N<=16384; N*=4)
    {   
       // Initialize MPI
       MPI_Init(&argc, &argv);
