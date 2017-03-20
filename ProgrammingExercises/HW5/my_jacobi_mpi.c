@@ -86,12 +86,12 @@ int main(int argc, char** argv)
 	      
 	      if (resmag/bmag < RESID) { done = 1; }
 	   }
-
+	   printf("%d", N);
 	   free(x); free(xtmp); free(b);
 
 	   // Clean up
 	   MPI_Finalize();
-	   printf("%d", N);
+
 	}
    
    return 0;
