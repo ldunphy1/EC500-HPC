@@ -39,12 +39,15 @@ int main(int argc, char** argv)
 	   
 	   // Initialize MPI
 	   MPI_Init(&argc, &argv);
+	   printf("MPI init");
 	   
 	   // Get the number of processes
 	   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+	   printf("MPI comm size");
 	   
 	   // Get the rank
 	   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+	   printf("MPI comm rank");
 	   
 	   // Figure out my local size. The last rank gets the leftover. 
 	   local_size = N/world_size;
@@ -66,7 +69,7 @@ int main(int argc, char** argv)
 		printf("source rank set %d\n", N);
 	   //printf("The source at %d goes on rank %d.\n", N/2, source_rank);
 	   if (my_rank == source_rank) { b[N/2 - source_rank*(N/world_size)] = 1.0; }
-	   printf("cheecked my rank=source rank%d\n", N);
+	   printf("checked my rank=source rank %d\n", N);
 	   
 	   //Get magnitude of rhs
 	   bmag = magnitude(b, local_size);
