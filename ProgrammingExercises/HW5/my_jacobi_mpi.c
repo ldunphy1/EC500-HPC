@@ -28,8 +28,7 @@ double getResid(double* x, double* b, const int size);
 
 int main(int argc, char** argv)
 {
-	for(int N=16; N<=16384; N*=4)
-	{
+	
 	   int i,totiter;
 	   int done = 0;
 	   double *x, *xtmp, *b; 
@@ -45,6 +44,9 @@ int main(int argc, char** argv)
 	   
 	   // Get the rank
 	   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+
+   for(int N=16; N<=16384; N*=4)
+   {
 	   
 	   // Figure out my local size. The last rank gets the leftover. 
 	   local_size = N/world_size;
