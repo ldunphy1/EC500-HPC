@@ -6,7 +6,7 @@
 #include <math.h>
 
 // 1D length
-#define N 512
+//#define N 512
 
 // Maximum number of iterations
 #define ITER_MAX 10000000
