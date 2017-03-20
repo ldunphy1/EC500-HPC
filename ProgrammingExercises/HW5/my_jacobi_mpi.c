@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
-#include <vector.h>
+#include <vector>
 
 // // 1D length
 // #define N 512
