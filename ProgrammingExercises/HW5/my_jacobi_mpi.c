@@ -8,7 +8,7 @@
 #include <vector>
 
 // // 1D length
-// #define N 512
+#define N 512
 
 #define GIG 1000000000
 
@@ -46,7 +46,7 @@ timespec diff(timespec start, timespec end)
 
 int main(int argc, char** argv)
 {
-   int i,totiter, N;
+   int i,totiter;
    int done = 0;
    double *x, *xtmp, *b; 
    double bmag, resmag;
@@ -59,8 +59,8 @@ int main(int argc, char** argv)
    std::vector<double> timing_list;
 
    int counter=0;
-   for(N=16; N<=16384; N*=4)
-   {   
+   // for(N=16; N<=16384; N*=4)
+   // {   
       // Start timer.
       clock_gettime(CLOCK_REALTIME, &time1);
 
@@ -129,7 +129,7 @@ int main(int argc, char** argv)
 
       // Clean up
       MPI_Finalize();
-   }
+   //}
    
    return 0;
 }
