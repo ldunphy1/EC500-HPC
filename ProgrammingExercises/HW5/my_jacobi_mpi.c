@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <time.h>
 
 // // 1D length
 // #define N 512
@@ -26,6 +27,20 @@ double magnitude(double* x, const int size);
 void jacobi(double* x, double* b, double* tmp, const int size);
 double getResid(double* x, double* b, const int size);
 
+timespec diff(timespec start, timespec end)
+{
+  timespec temp;
+  if ((end.tv_nsec-start.tv_nsec)<0)
+  {
+    temp.tv_sec = end.tv_sec-start.tv_sec-1;
+    temp.tv_nsec = 1000000000+end.tv_nsec-start.tv_nsec;
+  } else {
+    temp.tv_sec = end.tv_sec-start.tv_sec;
+    temp.tv_nsec = end.tv_nsec-start.tv_nsec;
+  }
+  return temp;
+}
+
 int main(int argc, char** argv)
 {
    int i,totiter, N;
@@ -34,8 +49,17 @@ int main(int argc, char** argv)
    double bmag, resmag;
    int local_size;
 
+   // Timing structures.
+   timespec time1, time2, timediff; 
+
+   // Timing storage.
+   std::vector<double> timing_list;
+
    for(N=16; N<=16384; N*=4)
    {   
+      // Start timer.
+      clock_gettime(CLOCK_REALTIME, &time1);
+
       // Initialize MPI
       MPI_Init(&argc, &argv);
       
@@ -87,6 +111,15 @@ int main(int argc, char** argv)
          if (resmag/bmag < RESID) { done = 1; }
       }
 
+      // End timer.
+      clock_gettime(CLOCK_REALTIME, &time2);
+
+      // Get difference.
+      timediff = diff(time1, time2);
+
+      // Save time in seconds to vector.
+      timing_list.push_back(((double)GIG * (double)timediff.tv_sec + (double)timediff.tv_nsec)/((double)GIG));
+      printf("%d %.8e\n", N, timing_list[counter]);
       free(x); free(xtmp); free(b);
 
       // Clean up
