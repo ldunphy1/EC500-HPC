@@ -58,6 +58,7 @@ int main(int argc, char** argv)
    // Timing storage.
    std::vector<double> timing_list;
 
+   int counter=0;
    for(N=16; N<=16384; N*=4)
    {   
       // Start timer.
@@ -123,6 +124,7 @@ int main(int argc, char** argv)
       // Save time in seconds to vector.
       timing_list.push_back(((double)GIG * (double)timediff.tv_sec + (double)timediff.tv_nsec)/((double)GIG));
       printf("%d %.8e\n", N, timing_list[counter]);
+      counter++;
       free(x); free(xtmp); free(b);
 
       // Clean up
