@@ -91,6 +91,7 @@ int main(int argc, char** argv)
 
 	   // Clean up
 	   MPI_Finalize();
+	   printf("%d", N);
 	}
    
    return 0;
