@@ -1,0 +1,166 @@
+7,8d6
+< #include <time.h>
+< #include <vector>
+10c8
+< // // 1D length
+---
+> // 1D length
+13,14d10
+< #define GIG 1000000000
+< 
+33,46d28
+< timespec diff(timespec start, timespec end)
+< {
+<   timespec temp;
+<   if ((end.tv_nsec-start.tv_nsec)<0)
+<   {
+<     temp.tv_sec = end.tv_sec-start.tv_sec-1;
+<     temp.tv_nsec = 1000000000+end.tv_nsec-start.tv_nsec;
+<   } else {
+<     temp.tv_sec = end.tv_sec-start.tv_sec;
+<     temp.tv_nsec = end.tv_nsec-start.tv_nsec;
+<   }
+<   return temp;
+< }
+< 
+53a36,49
+>    
+>    // Initialize MPI
+>    MPI_Init(&argc, &argv);
+>    
+>    // Get the number of processes
+>    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+>    
+>    // Get the rank
+>    MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+>    
+>    // Figure out my local size. The last rank gets the leftover. 
+>    local_size = N/world_size;
+>    
+>    if (my_rank == (world_size-1)) { local_size += (N % world_size) ; }
+55,85c51,55
+<    // Timing structures.
+<    timespec time1, time2, timediff; 
+< 
+<    // Timing storage.
+<    std::vector<double> timing_list;
+< 
+<    int counter=0;
+<    // for(N=16; N<=16384; N*=4)
+<    // {   
+<       // Start timer.
+<       clock_gettime(CLOCK_REALTIME, &time1);
+< 
+<       // Initialize MPI
+<       MPI_Init(&argc, &argv);
+<       
+<       // Get the number of processes
+<       MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+<       
+<       // Get the rank
+<       MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+< 
+<       // Figure out my local size. The last rank gets the leftover. 
+<       local_size = N/world_size;
+<       
+<       if (my_rank == (world_size-1)) { local_size += (N % world_size) ; }
+< 
+<       //printf("I am rank %d of %d and I have a local size %d.\n", my_rank, world_size, local_size); 
+<       
+<       x = (double*)malloc(local_size*sizeof(double));
+<       xtmp = (double*)malloc(local_size*sizeof(double));
+<       b = (double*)malloc(local_size*sizeof(double));
+---
+>    //printf("I am rank %d of %d and I have a local size %d.\n", my_rank, world_size, local_size); 
+>    
+>    x = (double*)malloc(local_size*sizeof(double));
+>    xtmp = (double*)malloc(local_size*sizeof(double));
+>    b = (double*)malloc(local_size*sizeof(double));
+87,97c57,67
+<       for (i=0;i<local_size;i++) { x[i] = 0.0; xtmp[i] = 0.0; b[i] = 0.0; }
+<       
+<       // b[N/2] = 1.0;
+<       // The source only lives on a particular rank!
+<       int source_rank = (N/2)/(N/world_size);
+<       //printf("The source at %d goes on rank %d.\n", N/2, source_rank);
+<       if (my_rank == source_rank) { b[N/2 - source_rank*(N/world_size)] = 1.0; }
+<       
+<       //Get magnitude of rhs
+<       bmag = magnitude(b, local_size);
+<       //printf("bmag: %.8e\n", bmag);
+---
+>    for (i=0;i<local_size;i++) { x[i] = 0.0; xtmp[i] = 0.0; b[i] = 0.0; }
+>    
+>    // b[N/2] = 1.0;
+>    // The source only lives on a particular rank!
+>    int source_rank = (N/2)/(N/world_size);
+>    //printf("The source at %d goes on rank %d.\n", N/2, source_rank);
+>    if (my_rank == source_rank) { b[N/2 - source_rank*(N/world_size)] = 1.0; }
+>    
+>    //Get magnitude of rhs
+>    bmag = magnitude(b, local_size);
+>    //printf("bmag: %.8e\n", bmag);
+99c69
+<       //printf("I am rank %d of %d and I see the magnitude is %.8e.\n", my_rank, world_size, bmag);
+---
+>    //printf("I am rank %d of %d and I see the magnitude is %.8e.\n", my_rank, world_size, bmag);
+103,104c73,74
+<       for (totiter=RESID_FREQ;totiter<ITER_MAX && done==0;totiter+=RESID_FREQ)
+<       {
+---
+>    for (totiter=RESID_FREQ;totiter<ITER_MAX && done==0;totiter+=RESID_FREQ)
+>    {
+106,107c76,77
+<          // do RESID_FREQ jacobi iterations
+<          jacobi(x, b, xtmp, local_size);
+---
+>       // do RESID_FREQ jacobi iterations
+>       jacobi(x, b, xtmp, local_size);
+109,115c79,82
+<          resmag = getResid(x, b, local_size);
+<          
+<          if (my_rank == 0) {
+<             printf("%d res %.8e bmag %.8e rel %.8e\n", totiter, resmag, bmag, resmag/bmag);
+<          }
+<          
+<          if (resmag/bmag < RESID) { done = 1; }
+---
+>       resmag = getResid(x, b, local_size);
+>       
+>       if (my_rank == 0) {
+>          printf("%d res %.8e bmag %.8e rel %.8e\n", totiter, resmag, bmag, resmag/bmag);
+116a84,86
+>       
+>       if (resmag/bmag < RESID) { done = 1; }
+>    }
+118,128c88
+<       // End timer.
+<       clock_gettime(CLOCK_REALTIME, &time2);
+< 
+<       // Get difference.
+<       timediff = diff(time1, time2);
+< 
+<       // Save time in seconds to vector.
+<       timing_list.push_back(((double)GIG * (double)timediff.tv_sec + (double)timediff.tv_nsec)/((double)GIG));
+<       printf("%d %.8e\n", N, timing_list[counter]);
+<       counter++;
+<       free(x); free(xtmp); free(b);
+---
+>    free(x); free(xtmp); free(b);
+130,132c90,91
+<       // Clean up
+<       MPI_Finalize();
+<    //}
+---
+>    // Clean up
+>    MPI_Finalize();
+237c196
+< 	
+---
+>    
+311,312c270
+< }
+< 
+---
+> }
+\ No newline at end of file
