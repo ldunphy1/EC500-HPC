@@ -28,7 +28,7 @@ double getResid(double* x, double* b, const int size);
 
 int main(int argc, char** argv)
 {
-	for(int N=16; N<=16384; n*=4)
+	for(int N=16; N<=16384; N*=4)
 	{
 	   int i,totiter;
 	   int done = 0;
