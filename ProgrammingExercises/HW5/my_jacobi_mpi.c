@@ -30,33 +30,31 @@ int main(int argc, char** argv)
 {
 	// Initialize MPI
 	   MPI_Init(&argc, &argv);
-	   printf("MPI init\n");
-	   
+	   //printf("MPI init\n");
+
 	for(int N=16; N<=16384; N*=4)
 	{
-		printf("begin %d\n", N);	
+		//printf("begin %d\n", N);	
 	   int i,totiter;
 	   int done = 0;
 	   double *x, *xtmp, *b; 
 	   double bmag, resmag;
-	   int local_size;
-	   
-	   
+	   int local_size; 
 	   
 	   // Get the number of processes
 	   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-	   printf("MPI comm size\n");
+	   //printf("MPI comm size\n");
 	   
 	   // Get the rank
 	   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
-	   printf("MPI comm rank\n");
+	   //printf("MPI comm rank\n");
 	   
 	   // Figure out my local size. The last rank gets the leftover. 
 	   local_size = N/world_size;
-	   printf("local size set %d\n", N);
+	   //printf("local size set %d\n", N);
 	   
 	   if (my_rank == (world_size-1)) { local_size += (N % world_size) ; }
-     	printf("checked my rank=world size %d\n", N);
+     	//printf("checked my rank=world size %d\n", N);
 
 	   //printf("I am rank %d of %d and I have a local size %d.\n", my_rank, world_size, local_size); 
 	   x = (double*)malloc(local_size*sizeof(double));
@@ -68,10 +66,10 @@ int main(int argc, char** argv)
 	   // b[N/2] = 1.0;
 	   // The source only lives on a particular rank!
 	   int source_rank = (N/2)/(N/world_size);
-		printf("source rank set %d\n", N);
+		//printf("source rank set %d\n", N);
 	   //printf("The source at %d goes on rank %d.\n", N/2, source_rank);
 	   if (my_rank == source_rank) { b[N/2 - source_rank*(N/world_size)] = 1.0; }
-	   printf("checked my rank=source rank %d\n", N);
+	   //printf("checked my rank=source rank %d\n", N);
 	   
 	   //Get magnitude of rhs
 	   bmag = magnitude(b, local_size);
@@ -90,12 +88,12 @@ int main(int argc, char** argv)
 	      resmag = getResid(x, b, local_size);
 	      
 	      if (my_rank == 0) {
-	         printf("%d res %.8e bmag %.8e rel %.8e\n", totiter, resmag, bmag, resmag/bmag);
+	         printf("N %d iterations %d res %.8e bmag %.8e rel %.8e\n", totiter, resmag, bmag, resmag/bmag);
 	      }
 	      
 	      if (resmag/bmag < RESID) { done = 1; }
 	   }
-	   printf("finished interations %d\n", N);
+	   //printf("finished interations %d\n", N);
 	   free(x); free(xtmp); free(b);
 	}
 
