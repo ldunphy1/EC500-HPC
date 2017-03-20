@@ -30,6 +30,7 @@ int main(int argc, char** argv)
 {
 	for(int N=16; N<=16384; N*=4)
 	{
+		printf("%d\n", N);	
 	   int i,totiter;
 	   int done = 0;
 	   double *x, *xtmp, *b; 
@@ -47,11 +48,12 @@ int main(int argc, char** argv)
 	   
 	   // Figure out my local size. The last rank gets the leftover. 
 	   local_size = N/world_size;
+	   printf("%d\n", N);
 	   
 	   if (my_rank == (world_size-1)) { local_size += (N % world_size) ; }
+     	printf("%d\n", N);
 
 	   //printf("I am rank %d of %d and I have a local size %d.\n", my_rank, world_size, local_size); 
-	   
 	   x = (double*)malloc(local_size*sizeof(double));
 	   xtmp = (double*)malloc(local_size*sizeof(double));
 	   b = (double*)malloc(local_size*sizeof(double));
@@ -61,8 +63,10 @@ int main(int argc, char** argv)
 	   // b[N/2] = 1.0;
 	   // The source only lives on a particular rank!
 	   int source_rank = (N/2)/(N/world_size);
+		printf("%d\n", N);
 	   //printf("The source at %d goes on rank %d.\n", N/2, source_rank);
 	   if (my_rank == source_rank) { b[N/2 - source_rank*(N/world_size)] = 1.0; }
+	   printf("%d\n", N);
 	   
 	   //Get magnitude of rhs
 	   bmag = magnitude(b, local_size);
@@ -86,7 +90,7 @@ int main(int argc, char** argv)
 	      
 	      if (resmag/bmag < RESID) { done = 1; }
 	   }
-	   printf("%d", N);
+	   printf("%d\n", N);
 	   free(x); free(xtmp); free(b);
 
 	   // Clean up
