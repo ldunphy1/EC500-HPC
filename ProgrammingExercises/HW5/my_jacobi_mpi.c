@@ -6,7 +6,7 @@
 #include <math.h>
 
 // 1D length
-#define N 512
+//#define N 512
 
 // Maximum number of iterations
 #define ITER_MAX 10000000
@@ -34,6 +34,8 @@ int main(int argc, char** argv)
    double bmag, resmag;
    int local_size;
    
+for(int N=16; N<=16384; N*=4)
+{
    // Initialize MPI
    MPI_Init(&argc, &argv);
    
@@ -79,11 +81,12 @@ int main(int argc, char** argv)
       resmag = getResid(x, b, local_size);
       
       if (my_rank == 0) {
-         printf("%d res %.8e bmag %.8e rel %.8e\n", totiter, resmag, bmag, resmag/bmag);
+         printf("N %d iterations %d res %.8e bmag %.8e rel %.8e\n", N, totiter, resmag, bmag, resmag/bmag);
       }
       
       if (resmag/bmag < RESID) { done = 1; }
    }
+}
 
    free(x); free(xtmp); free(b);
 
