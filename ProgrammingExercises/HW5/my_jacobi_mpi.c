@@ -28,6 +28,10 @@ double getResid(double* x, double* b, const int size);
 
 int main(int argc, char** argv)
 {
+	// Initialize MPI
+	   MPI_Init(&argc, &argv);
+	   printf("MPI init\n");
+	   
 	for(int N=16; N<=16384; N*=4)
 	{
 		printf("begin %d\n", N);	
@@ -37,9 +41,7 @@ int main(int argc, char** argv)
 	   double bmag, resmag;
 	   int local_size;
 	   
-	   // Initialize MPI
-	   MPI_Init(&argc, &argv);
-	   printf("MPI init\n");
+	   
 	   
 	   // Get the number of processes
 	   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
