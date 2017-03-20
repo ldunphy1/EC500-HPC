@@ -5,8 +5,8 @@
 #include <stdlib.h>
 #include <math.h>
 
-// // 1D length
-// #define N 512
+// 1D length
+#define N 512
 
 // Maximum number of iterations
 #define ITER_MAX 10000000
@@ -28,70 +28,67 @@ double getResid(double* x, double* b, const int size);
 
 int main(int argc, char** argv)
 {
-   int i,totiter, N;
+   int i,totiter;
    int done = 0;
    double *x, *xtmp, *b; 
    double bmag, resmag;
    int local_size;
+   
+   // Initialize MPI
+   MPI_Init(&argc, &argv);
+   
+   // Get the number of processes
+   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+   
+   // Get the rank
+   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+   
+   // Figure out my local size. The last rank gets the leftover. 
+   local_size = N/world_size;
+   
+   if (my_rank == (world_size-1)) { local_size += (N % world_size) ; }
 
-   for(int N=16; N<=16384; N*=4)
-   {   
-      // Initialize MPI
-      MPI_Init(&argc, &argv);
+   //printf("I am rank %d of %d and I have a local size %d.\n", my_rank, world_size, local_size); 
+   
+   x = (double*)malloc(local_size*sizeof(double));
+   xtmp = (double*)malloc(local_size*sizeof(double));
+   b = (double*)malloc(local_size*sizeof(double));
+
+   for (i=0;i<local_size;i++) { x[i] = 0.0; xtmp[i] = 0.0; b[i] = 0.0; }
+   
+   // b[N/2] = 1.0;
+   // The source only lives on a particular rank!
+   int source_rank = (N/2)/(N/world_size);
+   //printf("The source at %d goes on rank %d.\n", N/2, source_rank);
+   if (my_rank == source_rank) { b[N/2 - source_rank*(N/world_size)] = 1.0; }
+   
+   //Get magnitude of rhs
+   bmag = magnitude(b, local_size);
+   //printf("bmag: %.8e\n", bmag);
+
+   //printf("I am rank %d of %d and I see the magnitude is %.8e.\n", my_rank, world_size, bmag);
+
+
+
+   for (totiter=RESID_FREQ;totiter<ITER_MAX && done==0;totiter+=RESID_FREQ)
+   {
+
+      // do RESID_FREQ jacobi iterations
+      jacobi(x, b, xtmp, local_size);
+
+      resmag = getResid(x, b, local_size);
       
-      // Get the number of processes
-      MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-      
-      // Get the rank
-      MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
-
-      // Figure out my local size. The last rank gets the leftover. 
-      local_size = N/world_size;
-      
-      if (my_rank == (world_size-1)) { local_size += (N % world_size) ; }
-
-      //printf("I am rank %d of %d and I have a local size %d.\n", my_rank, world_size, local_size); 
-      
-      x = (double*)malloc(local_size*sizeof(double));
-      xtmp = (double*)malloc(local_size*sizeof(double));
-      b = (double*)malloc(local_size*sizeof(double));
-
-      for (i=0;i<local_size;i++) { x[i] = 0.0; xtmp[i] = 0.0; b[i] = 0.0; }
-      
-      // b[N/2] = 1.0;
-      // The source only lives on a particular rank!
-      int source_rank = (N/2)/(N/world_size);
-      //printf("The source at %d goes on rank %d.\n", N/2, source_rank);
-      if (my_rank == source_rank) { b[N/2 - source_rank*(N/world_size)] = 1.0; }
-      
-      //Get magnitude of rhs
-      bmag = magnitude(b, local_size);
-      //printf("bmag: %.8e\n", bmag);
-
-      //printf("I am rank %d of %d and I see the magnitude is %.8e.\n", my_rank, world_size, bmag);
-
-
-
-      for (totiter=RESID_FREQ;totiter<ITER_MAX && done==0;totiter+=RESID_FREQ)
-      {
-
-         // do RESID_FREQ jacobi iterations
-         jacobi(x, b, xtmp, local_size);
-
-         resmag = getResid(x, b, local_size);
-         
-         if (my_rank == 0) {
-            printf("%d res %.8e bmag %.8e rel %.8e\n", totiter, resmag, bmag, resmag/bmag);
-         }
-         
-         if (resmag/bmag < RESID) { done = 1; }
+      if (my_rank == 0) {
+         printf("%d res %.8e bmag %.8e rel %.8e\n", totiter, resmag, bmag, resmag/bmag);
       }
-
-      free(x); free(xtmp); free(b);
-
-      // Clean up
-      MPI_Finalize();
+      
+      if (resmag/bmag < RESID) { done = 1; }
    }
+
+   free(x); free(xtmp); free(b);
+
+   // Clean up
+   MPI_Finalize();
    
    return 0;
 }
@@ -196,7 +193,7 @@ double getResid(double* x, double* b, const int size)
    int i;
    double localres,resmag;
    double global_resmag;
-	
+   
    // Prepare for async send/recv
    MPI_Request request[4];
    int requests;
@@ -271,4 +268,3 @@ double getResid(double* x, double* b, const int size)
    
    return sqrt(global_resmag);
 }
-
