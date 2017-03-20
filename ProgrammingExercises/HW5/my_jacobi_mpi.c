@@ -87,12 +87,12 @@ int main(int argc, char** argv)
 	      
 	      if (resmag/bmag < RESID) { done = 1; }
 	   }
+
+	   free(x); free(xtmp); free(b);
+
+	   // Clean up
+	   MPI_Finalize();
 	}
-
-   free(x); free(xtmp); free(b);
-
-   // Clean up
-   MPI_Finalize();
    
    return 0;
 }
