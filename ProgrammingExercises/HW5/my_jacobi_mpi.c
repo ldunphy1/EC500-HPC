@@ -5,9 +5,12 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
+#include <vector>
 
 // // 1D length
 // #define N 512
+
+#define GIG 1000000000
 
 // Maximum number of iterations
 #define ITER_MAX 10000000
