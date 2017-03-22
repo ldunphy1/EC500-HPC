@@ -1,6 +1,9 @@
 
 #include <stdio.h>
 #include <math.h>
+#include <mpi.h>
+#include <time.h>
+#include <stdlib.h>
 
 // 1D length
 #define N 2048
@@ -14,19 +17,49 @@
 // The residual
 #define RESID 1e-6
 
+// Useful globals
+int world_size; // number of processes
+int my_rank; // my process number
+
 double magnitude(double** x);
 void jacobi(double** x, double** b, double** tmp);
 double getResid(double**x, double** b);
 
 int main(int argc, char** argv)
 {
+	// Initialize MPI
+   MPI_Init(&argc, &argv);
+
    int i,j, totiter;
    int done = 0;
    double** x = new double*[N+2];
    double** xtmp = new double*[N+2];
    double** b = new double*[N+2]; 
    double bmag, resmag;
+   int local_size; 
+	   
+   // Get the number of processes
+   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+   
+   // Get the rank
+   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+   
+   // Figure out my local size. The last rank gets the leftover. 
+   local_size = N/world_size;
+   
+   if (my_rank == (world_size-1)) { local_size += (N % world_size) ; }
+ 
+   // The source only lives on a particular rank!
+   int source_rank = (N/2)/(N/world_size);
 
+   if (my_rank == source_rank) { b[N/2 - source_rank*(N/world_size)][N/2 - source_rank*(N/world_size)] = 1.0; }
+
+   for(i=0;i<N+2;i++)
+   {
+   	x[i] = new double[N+2];
+   	xtmp[i] = new double[N+2];
+   	b[i] = new double[N+2];
+   }
    for (i=0;i<N+2;i++) 
    	{ 
    		for(j=0;j<N+2;j++)
@@ -52,6 +85,10 @@ int main(int argc, char** argv)
       printf("%d res %.8e bmag %.8e rel %.8e\n", totiter, resmag, bmag, resmag/bmag);
       if (resmag/bmag < RESID) { done = 1; }
    }
+   free(x); free(xtmp); free(b);
+   
+   // Clean up
+   MPI_Finalize();
 
    
    return 0;
