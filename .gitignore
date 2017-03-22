@@ -6,3 +6,8 @@
 
 # Unignore all dirs
 !*/
+
+*.sh.o*
+*.sh.po*
+*.sh.e*
+*.sh.pe*
