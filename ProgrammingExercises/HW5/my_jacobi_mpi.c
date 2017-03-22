@@ -4,9 +4,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <time.h>
 
-// 1D length
-//#define N 512
+#define GIG 1000000000
+
 
 // Maximum number of iterations
 #define ITER_MAX 10000000
@@ -21,6 +22,25 @@
 int world_size; // number of processes
 int my_rank; // my process number
 
+// Timing structures.
+timespec time1, time2, timediff; 
+
+// Timing storage.
+double timing=0.0;
+
+timespec diff(timespec start, timespec end)
+{
+  timespec temp;
+  if ((end.tv_nsec-start.tv_nsec)<0)
+  {
+    temp.tv_sec = end.tv_sec-start.tv_sec-1;
+    temp.tv_nsec = 1000000000+end.tv_nsec-start.tv_nsec;
+  } else {
+    temp.tv_sec = end.tv_sec-start.tv_sec;
+    temp.tv_nsec = end.tv_nsec-start.tv_nsec;
+  }
+  return temp;
+}
 
 double magnitude(double* x, const int size);
 void jacobi(double* x, double* b, double* tmp, const int size);
@@ -30,11 +50,9 @@ int main(int argc, char** argv)
 {
 	// Initialize MPI
 	   MPI_Init(&argc, &argv);
-	   //printf("MPI init\n");
 
 	for(int N=16; N<=16384; N*=4)
 	{
-		//printf("begin %d\n", N);	
 	   int i,totiter;
 	   int done = 0;
 	   double *x, *xtmp, *b; 
@@ -43,20 +61,15 @@ int main(int argc, char** argv)
 	   
 	   // Get the number of processes
 	   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-	   //printf("MPI comm size\n");
 	   
 	   // Get the rank
 	   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
-	   //printf("MPI comm rank\n");
 	   
 	   // Figure out my local size. The last rank gets the leftover. 
 	   local_size = N/world_size;
-	   //printf("local size set %d\n", N);
 	   
 	   if (my_rank == (world_size-1)) { local_size += (N % world_size) ; }
-     	//printf("checked my rank=world size %d\n", N);
 
-	   //printf("I am rank %d of %d and I have a local size %d.\n", my_rank, world_size, local_size); 
 	   x = (double*)malloc(local_size*sizeof(double));
 	   xtmp = (double*)malloc(local_size*sizeof(double));
 	   b = (double*)malloc(local_size*sizeof(double));
@@ -81,19 +94,33 @@ int main(int argc, char** argv)
 
 	   for (totiter=RESID_FREQ;totiter<ITER_MAX && done==0;totiter+=RESID_FREQ)
 	   {
+          // Start timer.
+         clock_gettime(CLOCK_REALTIME, &time1);
 
 	      // do RESID_FREQ jacobi iterations
-	      jacobi(x, b, xtmp, local_size);
+	      jacobi(x, b, xtmp, local_size);        
 
 	      resmag = getResid(x, b, local_size);
 	      
 	      if (my_rank == 0) {
-	         printf("N %d iterations %d res %.8e bmag %.8e rel %.8e\n", N, totiter, resmag, bmag, resmag/bmag);
+	         //printf("N %d iterations %d res %.8e bmag %.8e rel %.8e\n", N, totiter, resmag, bmag, resmag/bmag);
 	      }
 	      
-	      if (resmag/bmag < RESID) { done = 1; }
+	      if (resmag/bmag < RESID) 
+         { 
+             // End timer.
+            clock_gettime(CLOCK_REALTIME, &time2);
+
+            // Get difference.
+            timediff = diff(time1, time2);
+
+            // Save time in seconds to vector.
+            timing = ((double)GIG * (double)timediff.tv_sec + (double)timediff.tv_nsec)/((double)GIG);
+
+            done = 1; 
+         }
 	   }
-	   //printf("finished interations %d\n", N);
+      printf("%d %.8e\n", N, timing);
 	   free(x); free(xtmp); free(b);
 	}
 
