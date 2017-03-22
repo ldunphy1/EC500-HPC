@@ -88,7 +88,7 @@ int main(int argc, char** argv)
 	      resmag = getResid(x, b, local_size);
 	      
 	      if (my_rank == 0) {
-	         printf("N %d iterations %d res %.8e bmag %.8e rel %.8e\n", totiter, resmag, bmag, resmag/bmag);
+	         printf("N %d iterations %d res %.8e bmag %.8e rel %.8e\n", N, totiter, resmag, bmag, resmag/bmag);
 	      }
 	      
 	      if (resmag/bmag < RESID) { done = 1; }
