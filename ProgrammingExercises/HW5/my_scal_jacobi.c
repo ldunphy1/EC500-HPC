@@ -14,19 +14,29 @@
 // The residual
 #define RESID 1e-6
 
-double magnitude(double* x);
-void jacobi(double* x, double* b, double* tmp);
-double getResid(double* x, double* b);
+double magnitude(double** x);
+void jacobi(double** x, double** b, double** tmp);
+double getResid(double**x, double** b);
 
 int main(int argc, char** argv)
 {
-   int i,totiter;
+   int i,j, totiter;
    int done = 0;
-   double x[N], xtmp[N], b[N]; 
+   double** x = new double*[N+2];
+   double** xtmp = new double*[N+2];
+   double** b = new double*[N+2]; 
    double bmag, resmag;
 
-   for (i=0;i<N;i++) { x[i] = 0.0; xtmp[i] = 0.0; b[i] = 0.0; }
-   b[N/2] = 1.0;
+   for (i=0;i<N+2;i++) 
+   	{ 
+   		for(j=0;j<N+2;j++)
+		{
+			x[i][j] = 0.0; 
+			xtmp[i][j] = 0.0; 
+			b[i][j] = 0.0; 
+		}
+	}
+   b[(N+2)/2][(N+2)/2] = 1.0;
    //Get magnitude of rhs
    bmag = magnitude(b);
    printf("bmag: %.8e\n", bmag);
@@ -47,55 +57,67 @@ int main(int argc, char** argv)
    return 0;
 }
 
-double magnitude(double* x)
+double magnitude(double** x)
 {
-   int i;
+   int i, j;
    double bmag;
 
-   i = 0;
+   i, j = 0;
    bmag = 0.0;  
-   for (i = 1; i<N-1; i++)
+   for (i=2; i<N; i++)
    {
-     bmag = bmag + x[i]*x[i];
+   	for(j=2; j<N;j++)
+   	{
+     	bmag = bmag + x[i][j]*x[i][j];
+   	}
    }
    
    return sqrt(bmag);
 }
 
-void jacobi(double* x, double* b, double* tmp)
+void jacobi(double** x, double** b, double** tmp)
 {
-   int iter,i;
+   int iter,i, j;
 
    iter = 0; i = 0;
 
    for (iter=0;iter<RESID_FREQ;iter++)
    {
-      for (i=1;i<N-1;i++)
+      for (i=2;i<N;i++)
       {
-         tmp[i] = 0.5*(x[i+1]+x[i-1]) + b[i];
+      	for(j=2;j<N;j++)
+      	{
+         tmp[i][j] = (1/4)*(tmp[i+1][j] + tmp[i-1][j] + tmp[i][j+1] + tmp[i][j-1]) + b[i][j];
+      	}
       }
 
-      for (i=1;i<N-1;i++)
+      for (i=2;i<N;i++)
       {
-         x[i] = tmp[i];
+      	for(j=2;j<N;j++)
+      	{
+         x[i][j] = tmp[i][j];
+      	}
       }
    }
 }
 
-double getResid(double* x, double* b)
+double getResid(double** x, double** b)
 {
-   int i;
+   int i, j;
    double localres,resmag;
 
    i = 0;
    localres = 0.0;
    resmag = 0.0;
 
-   for (i=1;i<N-1;i++)
+   for (i=2;i<N;i++)
    {
-      localres = (b[i] - x[i] + 0.5*(x[i+1] + x[i-1]));
+   	for(j=2;j<N;j++)
+   	{
+      localres = (b[i][j] - x[i][j] + 0.5*(x[i+1][j] + x[i-1][j] + x[i][j+1] + x[i][j-1]));
       localres = localres*localres;
       resmag = resmag + localres;
+  	}
    }
 
    resmag = sqrt(resmag);
