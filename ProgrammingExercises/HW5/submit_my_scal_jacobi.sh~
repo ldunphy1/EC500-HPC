@@ -5,4 +5,4 @@
 # Invoke mpirun.
 # SGE sets $NSLOTS as the total number of processors
 #
-mpirun -np $NSLOTS ./my_scal_jacobi
+mpirun -np $NSLOTS ./my_jacobi_mpi
