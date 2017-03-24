@@ -101,9 +101,9 @@ double magnitude(double** x)
 
    i, j = 0;
    bmag = 0.0;  
-   for (i=2; i<N; i++)
+   for (i=1; i<=N; i++)
    {
-   	for(j=2; j<N;j++)
+   	for(j=1; j<=N;j++)
    	{
      	bmag = bmag + x[i][j]*x[i][j];
    	}
@@ -120,17 +120,17 @@ void jacobi(double** x, double** b, double** tmp)
 
    for (iter=0;iter<RESID_FREQ;iter++)
    {
-      for (i=2;i<N;i++)
+      for (i=1;i<=N;i++)
       {
-      	for(j=2;j<N;j++)
+      	for(j=1;j<=N;j++)
       	{
          tmp[i][j] = (1/4)*(tmp[i+1][j] + tmp[i-1][j] + tmp[i][j+1] + tmp[i][j-1]) + b[i][j];
       	}
       }
 
-      for (i=2;i<N;i++)
+      for (i=1;i<=N;i++)
       {
-      	for(j=2;j<N;j++)
+      	for(j=1;j<=N;j++)
       	{
          x[i][j] = tmp[i][j];
       	}
@@ -147,9 +147,9 @@ double getResid(double** x, double** b)
    localres = 0.0;
    resmag = 0.0;
 
-   for (i=2;i<N;i++)
+   for (i=1;i<=N;i++)
    {
-   	for(j=2;j<N;j++)
+   	for(j=1;j<=N;j++)
    	{
       localres = (b[i][j] - x[i][j] + 0.5*(x[i+1][j] + x[i-1][j] + x[i][j+1] + x[i][j-1]));
       localres = localres*localres;
