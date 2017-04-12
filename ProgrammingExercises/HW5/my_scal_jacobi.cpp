@@ -21,20 +21,21 @@
 int world_size; // number of processes
 int my_rank; // my process number
 
-double magnitude(double** x);
-void jacobi(double** x, double** b, double** tmp);
-double getResid(double**x, double** b);
+double magnitude(double** x, const int size);
+void jacobi(double** x, double** b, double** tmp, const int size);
+double getResid(double**x, double** b, const int size);
 
 int main(int argc, char** argv)
 {
-	// Initialize MPI
-   MPI_Init(&argc, &argv);
 
    int i,j, totiter;
    int done = 0;
    double **x, **xtemp, **b;
    double bmag, resmag;
    int Nrows; 
+
+   // Initialize MPI
+   MPI_Init(&argc, &argv);
 	   
    // Get the number of processes
    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
@@ -47,11 +48,18 @@ int main(int argc, char** argv)
    
    if (my_rank == (world_size-1)) { Nrows += (N % world_size) ; }
 
-   x = (double**)malloc((Nrows*N)*sizeof(double));
-   xtmp[i] = (double**)malloc((Nrows*N)*sizeof(double));
-   b[i] = (double**)malloc((Nrows*N)*sizeof(double));
+   double** x = new double*[Nrows];
+   double** xtmp = new double*[Nrows];
+   double** b = new double*[Nrows];
+   for(i=0;i<N<i++)
+   {
+      x[i] = new double[N];
+      xtmp[i] = new double[N];
+      b[i] = new double[N];
+
+   }
   
-   for (i=0;i<N+2;i++) 
+   for (i=0;i<N;i++) 
       { 
          for(j=0;j<N+2;j++)
       {
@@ -64,25 +72,23 @@ int main(int argc, char** argv)
    // The source only lives on a particular rank!
    int source_rank = (N/2)/(N/world_size);
 
-   if (my_rank == source_rank) { b[N/2 - source_rank*(N/world_size)][N/2 - source_rank*(N/world_size)] = 1.0; }
+   if (my_rank == source_rank) { b[N/2 - source_rank*Nrows][N/2 - source_rank*Nrows] = 1.0; }
 
-   // b[(N+2)/2][(N+2)/2] = 1.0;
    //Get magnitude of rhs
-   bmag = magnitude(b);
+   bmag = magnitude(b, Nrows);
    printf("bmag: %.8e\n", bmag);
 
    for (totiter=RESID_FREQ;totiter<ITER_MAX && done==0;totiter+=RESID_FREQ)
    {
 
       // do RESID_FREQ jacobi iterations
-      jacobi(x, b, xtmp);
+      jacobi(x, b, xtmp, Nrows);
 
       resmag = getResid(x, b);
 
       printf("%d res %.8e bmag %.8e rel %.8e\n", totiter, resmag, bmag, resmag/bmag);
       if (resmag/bmag < RESID) { done = 1; }
    }
-   free(x); free(xtmp); free(b);
    
    // Clean up
    MPI_Finalize();
@@ -91,25 +97,30 @@ int main(int argc, char** argv)
    return 0;
 }
 
-double magnitude(double** x)
+double magnitude(double** x, const int size)
 {
    int i, j;
    double bmag;
+   double global_bmag; // used for global reduce! 
 
    i, j = 0;
    bmag = 0.0;  
-   for (i=1; i<=N; i++)
+   global_bmag = 0.0;
+   for (i=0; i<N; i++)
    {
-   	for(j=1; j<=N;j++)
+   	for(j=0; j<N;j++)
    	{
      	   bmag = bmag + x[i][j]*x[i][j];
    	}
    }
+
+   // Reduce. 
+   MPI_Allreduce(&bmag, &global_bmag, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD); 
    
-   return sqrt(bmag);
+   return sqrt(global_bmag);
 }
 
-void jacobi(double** x, double** b, double** tmp)
+void jacobi(double** x, double** b, double** tmp, const int size)
 {
    int iter,i, j;
 
@@ -117,9 +128,9 @@ void jacobi(double** x, double** b, double** tmp)
 
    for (iter=0;iter<RESID_FREQ;iter++)
    {
-      for (i=1;i<=N;i++)
+      for (i=0;i<N;i++)
       {
-      	for(j=1;j<=N;j++)
+      	for(j=0;j<N;j++)
       	{
             tmp[i][j] = (1/4)*(tmp[i+1][j] + tmp[i-1][j] + tmp[i][j+1] + tmp[i][j-1]) + b[i][j];
       	}
@@ -158,7 +169,3 @@ double getResid(double** x, double** b)
 
    return resmag;
 }
-
-
-
-x-axis=local size
