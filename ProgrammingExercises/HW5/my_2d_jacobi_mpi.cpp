@@ -81,7 +81,6 @@ int main(int argc, char **argv)
             //Get magnitude of rhs
             bmag = magnitude(b, Nrows);
             printf("bmag: %.8e\n", bmag);
-            printf("totiter: %d resid_freq: %d iter_max: %d done: %d\n", totiter, RESID_FREQ, ITER_MAX, done);
 
             for (totiter = RESID_FREQ; totiter < ITER_MAX && done == 0; totiter += RESID_FREQ)
             {
