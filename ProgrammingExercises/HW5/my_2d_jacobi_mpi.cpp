@@ -140,6 +140,7 @@ double magnitude(double **x, const int size)
 
 void jacobi(double **x, double **b, double **tmp, const int size)
 {
+      printf("entered jacobi\n");
       int iter, i, j;
 
       // Prepare for async send/recv
@@ -164,9 +165,13 @@ void jacobi(double **x, double **b, double **tmp, const int size)
             MPI_Isend(&x[size][0], N + 1, MPI_DOUBLE, (my_rank + 1) % world_size, 1, MPI_COMM_WORLD, request + requests++);
             MPI_Irecv(&left_buffer, 1, MPI_DOUBLE, (my_rank + world_size - 1) % world_size, 1, MPI_COMM_WORLD, request + requests++);
 
+            printf("send & receive 1\n");
+
             // Fill the right buffer. Send to the left, listen from the right.
             MPI_Isend(&x[0][0], N + 1, MPI_DOUBLE, (my_rank + world_size - 1) % world_size, 0, MPI_COMM_WORLD, request + requests++);
             MPI_Irecv(&right_buffer, 1, MPI_DOUBLE, (my_rank + 1) % world_size, 0, MPI_COMM_WORLD, request + requests++);
+
+            printf("send & receive 2\n");
 
             for (i = 1; i < size; i++)
             {
@@ -175,8 +180,13 @@ void jacobi(double **x, double **b, double **tmp, const int size)
                         tmp[i][j] = (1 / 4) * (tmp[i + 1][j] + tmp[i - 1][j] + tmp[i][j + 1] + tmp[i][j - 1]) + b[i][j];
                   }
             }
+
+            printf("before wait all\n");
+
             // Wait for async.
             MPI_Waitall(requests, request, status);
+
+            printf("after wait all\n");
 
             // Impose zero bc.
             if (my_rank != 0)
@@ -204,7 +214,12 @@ void jacobi(double **x, double **b, double **tmp, const int size)
                   }
             }
       }
+
+      printf("before barrier\n");
+
       MPI_Barrier(MPI_COMM_WORLD);
+
+      printf("after barrier\n");
 }
 
 double getResid(double **x, double **b, const int size)
