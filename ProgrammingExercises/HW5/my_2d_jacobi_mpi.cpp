@@ -17,6 +17,7 @@
 // Useful globals
 int world_size; // number of processes
 int my_rank;    // my process number
+int N;
 
 double magnitude(double **x, const int size);
 void jacobi(double **x, double **b, double **tmp, const int size);
@@ -27,7 +28,7 @@ int main(int argc, char **argv)
       // Initialize MPI
       MPI_Init(&argc, &argv);
 
-      for (int N = 16; N <= 512; N += 2)
+      for (N = 16; N <= 512; N += 2)
       {
 
             int i, j, totiter;
