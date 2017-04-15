@@ -26,7 +26,7 @@ double getResid(double **x, double **b, const int size);
 int main(int argc, char **argv)
 {
       // Initialize MPI
-      MPI_Init(&argc, &argv);
+      MPI_Init();
 
       for (N = 16; N <= 512; N += 2)
       {
