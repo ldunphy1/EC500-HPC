@@ -81,14 +81,17 @@ int main(int argc, char **argv)
             //Get magnitude of rhs
             bmag = magnitude(b, Nrows);
             printf("bmag: %.8e\n", bmag);
+            printf("totiter: %d resid_freq: %d iter_max: %d done: %d\n", totiter, RESID_FREQ, ITER_MAX, done);
 
             for (totiter = RESID_FREQ; totiter < ITER_MAX && done == 0; totiter += RESID_FREQ)
             {
-
+                  printf("can enter loop\n");
                   // do RESID_FREQ jacobi iterations
                   jacobi(x, b, xtmp, Nrows);
+                  printf("finished jacobi\n");
 
                   resmag = getResid(x, b, Nrows);
+                  printf("finished getResid\n");
 
                   printf("%d res %.8e bmag %.8e rel %.8e\n", totiter, resmag, bmag, resmag / bmag);
                   if (resmag / bmag < RESID)
