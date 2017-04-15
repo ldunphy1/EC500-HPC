@@ -23,16 +23,15 @@ int my_rank; // my process number
 
 double magnitude(double** x, const int size);
 void jacobi(double** x, double** b, double** tmp, const int size);
-double getResid(double**x, double** b, const int size);
+double getResid(double** x, double** b, const int size);
 
 int main(int argc, char** argv)
 {
 
    int i,j, totiter;
    int done = 0;
-   double **x, **xtemp, **b;
    double bmag, resmag;
-   int Nrows; 
+   int Nrows = 0; 
 
    // Initialize MPI
    MPI_Init(&argc, &argv);
@@ -48,20 +47,20 @@ int main(int argc, char** argv)
    
    if (my_rank == (world_size-1)) { Nrows += (N % world_size) ; }
 
-   double** x = new double*[Nrows];
-   double** xtmp = new double*[Nrows];
-   double** b = new double*[Nrows];
-   for(i=0;i<N<i++)
+   double** x = new double*[Nrows+1];
+   double** xtmp = new double*[Nrows+1];
+   double** b = new double*[Nrows+1];
+   for(i=0;i<N+1;i++)
    {
-      x[i] = new double[N];
-      xtmp[i] = new double[N];
-      b[i] = new double[N];
+      x[i] = new double[N+1];
+      xtmp[i] = new double[N+1];
+      b[i] = new double[N+1];
 
    }
   
-   for (i=0;i<N;i++) 
+   for (i=0;i<N+1;i++) 
       { 
-         for(j=0;j<N+2;j++)
+         for(j=0;j<N+1;j++)
       {
          x[i][j] = 0.0; 
          xtmp[i][j] = 0.0; 
@@ -84,11 +83,16 @@ int main(int argc, char** argv)
       // do RESID_FREQ jacobi iterations
       jacobi(x, b, xtmp, Nrows);
 
-      resmag = getResid(x, b);
+      resmag = getResid(x, b, Nrows);
 
       printf("%d res %.8e bmag %.8e rel %.8e\n", totiter, resmag, bmag, resmag/bmag);
       if (resmag/bmag < RESID) { done = 1; }
    }
+   for(i=0;i<N+1;i++)
+   {
+         delete[] x[i], xtmp[i], b[i];
+   }
+   delete[] x, xtmp, b;
    
    // Clean up
    MPI_Finalize();
@@ -99,23 +103,26 @@ int main(int argc, char** argv)
 
 double magnitude(double** x, const int size)
 {
-   int i, j;
+   int i;
+   int j;
    double bmag;
-   double global_bmag; // used for global reduce! 
+   double global_bmag;// used for global reduce! 
+   const int lower_limit = (my_rank == 0) ? 1 : 0;
+   const int upper_limit = (my_rank == world_size-1) ? size-1 : size;
 
    i, j = 0;
    bmag = 0.0;  
    global_bmag = 0.0;
-   for (i=0; i<N; i++)
+   for (i=lower_limit; i<upper_limit; i++)
    {
-   	for(j=0; j<N;j++)
+   	for(j=1; j<N;j++)
    	{
      	   bmag = bmag + x[i][j]*x[i][j];
    	}
    }
 
    // Reduce. 
-   MPI_Allreduce(&bmag, &global_bmag, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD); 
+   MPI_Allreduce(&bmag, &global_bmag, N+1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD); 
    
    return sqrt(global_bmag);
 }
@@ -124,38 +131,104 @@ void jacobi(double** x, double** b, double** tmp, const int size)
 {
    int iter,i, j;
 
+   // Prepare for async send/recv
+   MPI_Request request[4];
+   int requests;
+   MPI_Status status[4];
+   
+   const int lower_limit = (my_rank == 0) ? 1 : 0;
+   const int upper_limit = (my_rank == world_size-1) ? size-1 : size;
+   
+   // grab the left and right buffer.
+   double left_buffer = 0.0;
+   double right_buffer = 0.0;
+
    iter = 0; i = 0;
 
    for (iter=0;iter<RESID_FREQ;iter++)
    {
-      for (i=0;i<N;i++)
+         requests = 0;
+         // Fill the left buffer. Send to the right, listen from the left.
+         MPI_Isend(&x[size][0], N+1, MPI_DOUBLE, (my_rank+1)%world_size, 1, MPI_COMM_WORLD, request + requests++);
+         MPI_Irecv(&left_buffer, N+1, MPI_DOUBLE, (my_rank+world_size-1)%world_size, 1, MPI_COMM_WORLD, request + requests++);
+         
+         // Fill the right buffer. Send to the left, listen from the right.
+         MPI_Isend(&x[0][0], N+1, MPI_DOUBLE, (my_rank+world_size-1)%world_size, 0, MPI_COMM_WORLD, request + requests++);
+         MPI_Irecv(&right_buffer, N+1, MPI_DOUBLE, (my_rank+1)%world_size, 0, MPI_COMM_WORLD, request + requests++);
+        
+      for (i=1;i<size;i++)
       {
-      	for(j=0;j<N;j++)
+      	for(j=1;j<N;j++)
       	{
-            tmp[i][j] = (1/4)*(tmp[i+1][j] + tmp[i-1][j] + tmp[i][j+1] + tmp[i][j-1]) + b[i][j];
+                  tmp[i][j] = (1/4)*(tmp[i+1][j] + tmp[i-1][j] + tmp[i][j+1] + tmp[i][j-1]) + b[i][j];
       	}
       }
+      // Wait for async.
+      MPI_Waitall ( requests, request, status );
 
-      for (i=1;i<=N;i++)
+      // Impose zero bc.
+      if (my_rank != 0)
       {
-      	for(j=1;j<=N;j++)
+            for(i=0;i<N+1;i++)
+            {
+                  tmp[0][i] = 0.5*(x[0][i]+left_buffer) + b[0][i];
+            }
+      }
+      
+      // Impose zero bc.
+      if (my_rank != world_size-1)
+      {
+            for(i=0;i<N+1;i++)
+            {
+                  tmp[size-1][i] = 0.5*(right_buffer+x[size-1][i]) + b[size-1][i];
+            }
+      }
+
+      for (i=lower_limit;i<upper_limit;i++)
+      {
+      	for(j=1;j<N;j++)
       	{
-            x[i][j] = tmp[i][j];
+                  x[i][j] = tmp[i][j];
       	}
       }
    }
+    MPI_Barrier(MPI_COMM_WORLD);
 }
 
-double getResid(double** x, double** b)
+double getResid(double** x, double** b, const int size)
 {
+      const int lower_limit = (my_rank == 0) ? 1 : 0;
+      const int upper_limit = (my_rank == world_size-1) ? size-1 : size;
+
    int i, j;
    double localres,resmag;
+   double global_resmag;
+   
+   // Prepare for async send/recv
+   MPI_Request request[4];
+   int requests;
+   MPI_Status status[4];
+   
+   // grab the left and right buffer.
+   double left_buffer = 0.0;
+   double right_buffer = 0.0;
+   
+   requests=0;
+      
+   // Fill the left buffer. Send to the right, listen from the left.
+   MPI_Isend(&x[size][0], N+1, MPI_DOUBLE, (my_rank+1)%world_size, 1, MPI_COMM_WORLD, request + requests++);
+   MPI_Irecv(&left_buffer, N+1, MPI_DOUBLE, (my_rank+world_size-1)%world_size, 1, MPI_COMM_WORLD, request + requests++);
+
+
+   // Fill the right buffer. Send to the left, listen from the right.
+   MPI_Isend(&x[0][0], N+1, MPI_DOUBLE, (my_rank+world_size-1)%world_size, 0, MPI_COMM_WORLD, request + requests++);
+   MPI_Irecv(&right_buffer, N+1, MPI_DOUBLE, (my_rank+1)%world_size, 0, MPI_COMM_WORLD, request + requests++);
 
    i = 0;
    localres = 0.0;
    resmag = 0.0;
 
-   for (i=1;i<=N;i++)
+   for (i=lower_limit;i<upper_limit;i++)
    {
    	for(j=1;j<=N;j++)
    	{
@@ -165,7 +238,33 @@ double getResid(double** x, double** b)
   	}
    }
 
-   resmag = sqrt(resmag);
+    // Wait for async.
+   MPI_Waitall ( requests, request, status );
+   
+   // Impose zero bc.
+      if (my_rank != 0)
+      {
+            for(i=0;i<N+1;i++)
+            {
+                  localres = (b[0][i] - x[0][i] + .5*(x[0][i] + left_buffer));
+                  localres = localres*localres;
+                  resmag = resmag + localres;
+            }
+      }
+      
+      // Impose zero bc.
+      if (my_rank != world_size-1)
+      {
+            for(i=0;i<N+1;i++)
+            {
+                  localres = (b[size-1][i] - x[size-1][i] + 0.5*(right_buffer + x[size-1][i]));
+                  localres = localres*localres;
+                  resmag = resmag + localres;
+            }
+      }
 
-   return resmag;
+   // Reduce. 
+   MPI_Allreduce(&resmag, &global_resmag, N+1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD); 
+   
+   return sqrt(global_resmag);
 }
