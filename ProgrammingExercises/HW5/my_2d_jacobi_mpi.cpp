@@ -132,7 +132,7 @@ double magnitude(double **x, const int size)
       }
 
       // Reduce.
-      MPI_Allreduce(&bmag, &global_bmag, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+      MPI_Allreduce(&bmag, &global_bmag, N + 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
       return sqrt(global_bmag);
 }
@@ -161,14 +161,14 @@ void jacobi(double **x, double **b, double **tmp, const int size)
       {
             requests = 0;
             // Fill the left buffer. Send to the right, listen from the left.
-            MPI_Isend(&x[size-1][0], N + 1, MPI_DOUBLE, (my_rank + 1) % world_size, 1, MPI_COMM_WORLD, request + requests++);
-            MPI_Irecv(&left_buffer, N+1, MPI_DOUBLE, (my_rank + world_size - 1) % world_size, 1, MPI_COMM_WORLD, request + requests++);
+            MPI_Isend(&x[size - 1][0], N + 1, MPI_DOUBLE, (my_rank + 1) % world_size, 1, MPI_COMM_WORLD, request + requests++);
+            MPI_Irecv(&left_buffer, N + 1, MPI_DOUBLE, (my_rank + world_size - 1) % world_size, 1, MPI_COMM_WORLD, request + requests++);
 
             printf("send & receive 1\n");
 
             // Fill the right buffer. Send to the left, listen from the right.
             MPI_Isend(&x[0][0], N + 1, MPI_DOUBLE, (my_rank + world_size - 1) % world_size, 0, MPI_COMM_WORLD, request + requests++);
-            MPI_Irecv(&right_buffer, N+1, MPI_DOUBLE, (my_rank + 1) % world_size, 0, MPI_COMM_WORLD, request + requests++);
+            MPI_Irecv(&right_buffer, N + 1, MPI_DOUBLE, (my_rank + 1) % world_size, 0, MPI_COMM_WORLD, request + requests++);
 
             printf("send & receive 2\n");
 
@@ -242,12 +242,12 @@ double getResid(double **x, double **b, const int size)
       requests = 0;
 
       // Fill the left buffer. Send to the right, listen from the left.
-      MPI_Isend(&x[size-1][0], N + 1, MPI_DOUBLE, (my_rank + 1) % world_size, 1, MPI_COMM_WORLD, request + requests++);
-      MPI_Irecv(&left_buffer, N+1, MPI_DOUBLE, (my_rank + world_size - 1) % world_size, 1, MPI_COMM_WORLD, request + requests++);
+      MPI_Isend(&x[size - 1][0], N + 1, MPI_DOUBLE, (my_rank + 1) % world_size, 1, MPI_COMM_WORLD, request + requests++);
+      MPI_Irecv(&left_buffer, N + 1, MPI_DOUBLE, (my_rank + world_size - 1) % world_size, 1, MPI_COMM_WORLD, request + requests++);
 
       // Fill the right buffer. Send to the left, listen from the right.
       MPI_Isend(&x[0][0], N + 1, MPI_DOUBLE, (my_rank + world_size - 1) % world_size, 0, MPI_COMM_WORLD, request + requests++);
-      MPI_Irecv(&right_buffer, N+1, MPI_DOUBLE, (my_rank + 1) % world_size, 0, MPI_COMM_WORLD, request + requests++);
+      MPI_Irecv(&right_buffer, N + 1, MPI_DOUBLE, (my_rank + 1) % world_size, 0, MPI_COMM_WORLD, request + requests++);
 
       i = 0;
       localres = 0.0;
@@ -289,7 +289,7 @@ double getResid(double **x, double **b, const int size)
       }
 
       // Reduce.
-      MPI_Allreduce(&resmag, &global_resmag, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+      MPI_Allreduce(&resmag, &global_resmag, N + 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
       return sqrt(global_resmag);
 }
