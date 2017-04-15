@@ -161,7 +161,7 @@ void jacobi(double **x, double **b, double **tmp, const int size)
       {
             requests = 0;
             // Fill the left buffer. Send to the right, listen from the left.
-            MPI_Isend(&x[size][0], N + 1, MPI_DOUBLE, (my_rank + 1) % world_size, 1, MPI_COMM_WORLD, request + requests++);
+            MPI_Isend(&x[size-1][0], N + 1, MPI_DOUBLE, (my_rank + 1) % world_size, 1, MPI_COMM_WORLD, request + requests++);
             MPI_Irecv(&left_buffer, 1, MPI_DOUBLE, (my_rank + world_size - 1) % world_size, 1, MPI_COMM_WORLD, request + requests++);
 
             printf("send & receive 1\n");
@@ -242,7 +242,7 @@ double getResid(double **x, double **b, const int size)
       requests = 0;
 
       // Fill the left buffer. Send to the right, listen from the left.
-      MPI_Isend(&x[size][0], N + 1, MPI_DOUBLE, (my_rank + 1) % world_size, 1, MPI_COMM_WORLD, request + requests++);
+      MPI_Isend(&x[size-1][0], N + 1, MPI_DOUBLE, (my_rank + 1) % world_size, 1, MPI_COMM_WORLD, request + requests++);
       MPI_Irecv(&left_buffer, 1, MPI_DOUBLE, (my_rank + world_size - 1) % world_size, 1, MPI_COMM_WORLD, request + requests++);
 
       // Fill the right buffer. Send to the left, listen from the right.
