@@ -6,13 +6,13 @@
 #include <stdlib.h>
 
 // Maximum number of iterations
-#define ITER_MAX 1000000
+#define ITER_MAX 10000000
 
 // How often to check the relative residual
-#define RESID_FREQ 1000
+#define RESID_FREQ 10000
 
 // The residual
-#define RESID 1e-6
+#define RESID 1e-2
 
 // Useful globals
 int world_size; // number of processes
