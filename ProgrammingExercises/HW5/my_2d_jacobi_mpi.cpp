@@ -137,7 +137,7 @@ double magnitude(double **x, const int Nrows, const int N)
       }
 
       // Reduce.
-      MPI_Allreduce(&bmag, &global_bmag, N + 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+      MPI_Allreduce(&bmag, &global_bmag, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
       return sqrt(global_bmag);
 }
