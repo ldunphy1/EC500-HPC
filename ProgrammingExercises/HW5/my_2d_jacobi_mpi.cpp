@@ -176,7 +176,7 @@ void jacobi(double **x, double **b, double **tmp, const int Nrows, const int N)
             {
                   for (j = 1; j < N; j++)
                   {
-                        tmp[i][j] = 0.25 * (tmp[i + 1][j] + tmp[i - 1][j] + tmp[i][j + 1] + tmp[i][j - 1]) + b[i][j];
+                        tmp[i][j] = 0.25 * (x[i + 1][j] + x[i - 1][j] + x[i][j + 1] + x[i][j - 1]) + b[i][j];
                   }
             }
 
