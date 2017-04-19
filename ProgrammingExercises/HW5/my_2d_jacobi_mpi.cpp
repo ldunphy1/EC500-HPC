@@ -206,7 +206,7 @@ void jacobi(double **x, double **b, double **tmp, const int Nrows, const int N)
             {
                   for (i = 0; i < N + 1; i++)
                   {
-                        tmp[size - 1][i] = 0.25 * (x[Nrows - 2][i] + bottom_buffer[j] + x[Nrows - 1][i + 1] + x[Nrows - 1][i - 1]) + b[Nrows - 1][i];
+                        tmp[Nrows - 1][i] = 0.25 * (x[Nrows - 2][i] + bottom_buffer[j] + x[Nrows - 1][i + 1] + x[Nrows - 1][i - 1]) + b[Nrows - 1][i];
                   }
             }
 
@@ -296,7 +296,7 @@ double getResid(double **x, double **b, const int Nrows, const int N)
       // Reduce.
       MPI_Allreduce(&resmag, &global_resmag, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
-      delete[] top_buffer, bottom_buffer
+      delete[] top_buffer, bottom_buffer;
 
       return sqrt(global_resmag);
 }
