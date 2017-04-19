@@ -105,7 +105,9 @@ int main(int argc, char **argv)
             {
                   delete[] x[i], xtmp[i], b[i];
             }
-            delete[] x, xtmp, b;
+            delete[] x;
+            delete[] xtmp;
+            delete[] b;
       }
 
       // Clean up
@@ -210,7 +212,8 @@ void jacobi(double **x, double **b, double **tmp, const int Nrows, const int N)
 
       MPI_Barrier(MPI_COMM_WORLD);
 
-      delete[] top_buffer, bottom_buffer;
+      delete[] top_buffer;
+      delete[] bottom_buffer;
 }
 
 double getResid(double **x, double **b, const int Nrows, const int N)
@@ -281,7 +284,8 @@ double getResid(double **x, double **b, const int Nrows, const int N)
       // Reduce.
       MPI_Allreduce(&resmag, &global_resmag, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
-      delete[] top_buffer, bottom_buffer;
+      delete[] top_buffer;
+      delete[] bottom_buffer;
 
       return sqrt(global_resmag);
 }
