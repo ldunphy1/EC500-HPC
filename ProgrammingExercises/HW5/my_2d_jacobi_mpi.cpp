@@ -82,7 +82,7 @@ int main(int argc, char **argv)
             if (my_rank == 0)
             {
                   printf("bmag: %.8e\n", bmag);
-                  fflush(stdout)
+                  fflush(stdout);
             }
 
             for (totiter = RESID_FREQ; totiter < ITER_MAX && done == 0; totiter += RESID_FREQ)
@@ -94,7 +94,7 @@ int main(int argc, char **argv)
                   if (my_rank == 0)
                   {
                         printf("%d res %.8e bmag %.8e rel %.8e\n", totiter, resmag, bmag, resmag / bmag);
-                        fflush(stdout)
+                        fflush(stdout);
                   }
                   if (resmag / bmag < RESID)
                   {
