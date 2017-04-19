@@ -195,7 +195,7 @@ void jacobi(double **x, double **b, double **tmp, const int Nrows, const int N)
             // Impose zero bc.
             if (my_rank != world_size - 1)
             {
-                  for (i = 0; i < N + 1; i++)
+                  for (i = 1; i < N; i++)
                   {
                         tmp[Nrows - 1][i] = 0.25 * (x[Nrows - 2][i] + bottom_buffer[j] + x[Nrows - 1][i + 1] + x[Nrows - 1][i - 1]) + b[Nrows - 1][i];
                   }
