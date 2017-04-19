@@ -252,7 +252,7 @@ double getResid(double **x, double **b, const int Nrows, const int N)
       {
             for (j = 1; j < N; j++)
             {
-                  localres = x[i][j] - (0.25 * (x[i + 1][j] + x[i - 1][j] + x[i][j + 1] + x[i][j - 1])+b[i][j]);
+                  localres = x[i][j] - (0.25 * (x[i + 1][j] + x[i - 1][j] + x[i][j + 1] + x[i][j - 1]) + b[i][j]);
                   localres = localres * localres;
                   resmag = resmag + localres;
             }
@@ -266,7 +266,7 @@ double getResid(double **x, double **b, const int Nrows, const int N)
       {
             for (i = 1; i < N; i++)
             {
-                  localres = x[0][i] - (0.25 * (x[1][i] + top_buffer[i]+x[0][i+1]+x[0][i-1])+b[0][i]);
+                  localres = x[0][i] - (0.25 * (x[1][i] + top_buffer[i] + x[0][i + 1] + x[0][i - 1]) + b[0][i]);
                   localres = localres * localres;
                   resmag = resmag + localres;
             }
@@ -277,7 +277,7 @@ double getResid(double **x, double **b, const int Nrows, const int N)
       {
             for (i = 1; i < N; i++)
             {
-                  localres = x[Nrows - 1][i] - (0.25 * (x[Nrows - 2][i] + bottom_buffer[i] + x[Nrows - 1][i] + x[Nrows-1][i-1]) + b[Nrows-1][i]);
+                  localres = x[Nrows - 1][i] - (0.25 * (x[Nrows - 2][i] + bottom_buffer[i] + x[Nrows - 1][i + 1] + x[Nrows - 1][i - 1]) + b[Nrows - 1][i]);
             }
       }
 
