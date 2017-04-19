@@ -82,20 +82,19 @@ int main(int argc, char **argv)
             if (my_rank == 0)
             {
                   printf("bmag: %.8e\n", bmag);
+                  fflush(stdout)
             }
 
             for (totiter = RESID_FREQ; totiter < ITER_MAX && done == 0; totiter += RESID_FREQ)
             {
-                  printf("can enter loop\n");
                   // do RESID_FREQ jacobi iterations
                   jacobi(x, b, xtmp, Nrows, N);
-                  printf("finished jacobi\n");
 
                   resmag = getResid(x, b, Nrows, N);
-                  printf("finished getResid\n");
                   if (my_rank == 0)
                   {
                         printf("%d res %.8e bmag %.8e rel %.8e\n", totiter, resmag, bmag, resmag / bmag);
+                        fflush(stdout)
                   }
                   if (resmag / bmag < RESID)
                   {
@@ -143,7 +142,6 @@ double magnitude(double **x, const int Nrows, const int N)
 
 void jacobi(double **x, double **b, double **tmp, const int Nrows, const int N)
 {
-      printf("entered jacobi\n");
       int iter, i, j;
 
       // Prepare for async send/recv
@@ -168,13 +166,9 @@ void jacobi(double **x, double **b, double **tmp, const int Nrows, const int N)
             MPI_Isend(x[Nrows - 1], N + 1, MPI_DOUBLE, (my_rank + 1) % world_size, 1, MPI_COMM_WORLD, request + requests++);
             MPI_Irecv(top_buffer, N + 1, MPI_DOUBLE, (my_rank + world_size - 1) % world_size, 1, MPI_COMM_WORLD, request + requests++);
 
-            printf("send & receive 1\n");
-
             // Fill the right buffer. Send to the left, listen from the right.
             MPI_Isend(x[0], N + 1, MPI_DOUBLE, (my_rank + world_size - 1) % world_size, 0, MPI_COMM_WORLD, request + requests++);
             MPI_Irecv(bottom_buffer, N + 1, MPI_DOUBLE, (my_rank + 1) % world_size, 0, MPI_COMM_WORLD, request + requests++);
-
-            printf("send & receive 2\n");
 
             for (i = 1; i < Nrows - 1; i++)
             {
@@ -184,12 +178,8 @@ void jacobi(double **x, double **b, double **tmp, const int Nrows, const int N)
                   }
             }
 
-            printf("before wait all\n");
-
             // Wait for async.
             MPI_Waitall(requests, request, status);
-
-            printf("after wait all\n");
 
             // Impose zero bc.
             if (my_rank != 0)
@@ -218,11 +208,7 @@ void jacobi(double **x, double **b, double **tmp, const int Nrows, const int N)
             }
       }
 
-      printf("before barrier\n");
-
       MPI_Barrier(MPI_COMM_WORLD);
-
-      printf("after barrier\n");
 
       delete[] top_buffer, bottom_buffer;
 }
